@@ -9,13 +9,13 @@ Single source of truth for what v1 does and doesn't include. See `ARCHITECTURE.m
 
 ## Phase 0 — Project Setup
 
-- [ ] Repo/folder created, README stub with one-line project purpose
-- [ ] Manifest V3 skeleton (background service worker, no content scripts)
-- [ ] Decision made and documented on where the multi-step pipeline runs (UI-context page vs. background worker + keep-alive) — before Phase 3 is built, not discovered during testing
-- [ ] `.gitignore` covers API keys, `.env`, any local config
-- [ ] Test runner set up before any feature code is written
-- [ ] Google Cloud project created, GA4 Data API enabled
-- [ ] OAuth client (Chrome extension type) created, Pete added as test user
+- [x] Repo/folder created, README stub with one-line project purpose
+- [x] Manifest V3 skeleton (background service worker, no content scripts)
+- [x] Decision made and documented on where the multi-step pipeline runs (UI-context page vs. background worker + keep-alive) — before Phase 3 is built, not discovered during testing
+- [x] `.gitignore` covers API keys, `.env`, any local config
+- [x] Test runner set up before any feature code is written
+- [x] Google Cloud project created, GA4 Data API enabled
+- [x] OAuth client (Chrome extension type) created, Pete added as test user
 
 ## Phase 1 — Auth
 
