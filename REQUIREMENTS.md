@@ -34,6 +34,7 @@ Single source of truth for what v1 does and doesn't include. See `ARCHITECTURE.m
 
 ## Phase 3 — Query Translation (NL → GA4 request)
 
+- [ ] Model set to `claude-sonnet-5`, hardcoded in one config location (no runtime picker)
 - [ ] System prompt built describing `runReport` request shape
 - [ ] Property's real metadata injected into the prompt context, including property timezone
 - [ ] Today's actual date passed explicitly into the prompt (never inferred by the model)
@@ -54,6 +55,7 @@ Single source of truth for what v1 does and doesn't include. See `ARCHITECTURE.m
 
 ## Phase 5 — Answer Composition
 
+- [ ] Model set to `claude-haiku-4-5-20251001`, hardcoded in one config location (no runtime picker)
 - [ ] Claude call turns raw rows into a short plain-language answer
 - [ ] Answer includes or links to the supporting numbers (no unverifiable claims)
 - [ ] Where the data supports it, answer frames a comparison/trend (vs. prior period, vs. another segment) rather than a bare number

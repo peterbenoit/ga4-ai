@@ -38,12 +38,12 @@ This is scoped for one person, one Google identity, running locally. It is not a
 
 ```
 ┌─────────────────────────────┐
-│  Extension UI (popup or      │
-│  side panel)                 │
-│  - question input             │
-│  - answer display              │
-│  - property picker             │
-└──────────────┬────────────────┘
+│  Extension UI (side panel)  │
+│  - pipeline orchestrator    │
+│  - question input           │
+│  - answer display           │
+│  - property picker          │
+└──────────────┬──────────────┘
                │
                ▼
 ┌─────────────────────────────┐
@@ -110,7 +110,7 @@ This is scoped for one person, one Google identity, running locally. It is not a
 
 ## LLM Integration
 
-- Extension calls `api.anthropic.com/v1/messages` directly from extension JS (background service worker, not content script, to avoid page CSP issues).
+- The side-panel extension page calls `api.anthropic.com/v1/messages` directly. The side panel is an extension context, so it avoids page CSP restrictions without relying on the background service worker to survive the full pipeline.
 - Anthropic API key stored in `chrome.storage.local`, entered once via an options page. Never hardcoded, never committed.
 - Two separate calls rather than one combined call:
   - **Call 1 (translate):** narrow, deterministic-leaning task — turn NL question into a structured API request. Use a tight system prompt with the actual metadata list injected, and ask for JSON-only output.
@@ -129,12 +129,25 @@ This is scoped for one person, one Google identity, running locally. It is not a
 
 ## Service Worker Lifecycle
 
-- Manifest V3 background service workers are killed after ~30 seconds idle. The question → translate → execute → compose pipeline involves multiple sequential network calls and can exceed that window between steps.
-- The pipeline must not rely on the background service worker staying alive across the full chain by default. Options to evaluate at build time: running the chain from the extension's UI page context (popup/side panel) instead of the background worker, or using `chrome.alarms`/keep-alive pings if background execution is required. Decide before Phase 3 implementation, not after hitting a dropped request in testing.
+- Resolved: the side-panel page owns the question → translate → execute → compose pipeline.
+- The background service worker only configures toolbar-click side-panel behavior and handles future short event-driven work if required.
+- Closing the side panel cancels any active pipeline. While a query is running, the UI must state that the panel needs to remain open.
+- No keep-alive pings, alarms, offscreen document, or backend are used for pipeline orchestration.
 
 ## Chart Type Selection
 
 - Chart type is chosen by data shape, not fixed: date-based dimension → line chart; categorical dimension → bar chart; single aggregate value → no chart, number only. This rule lives in the export/chart layer, applied after the report data returns, not decided by the LLM.
+- Library: **Chart.js**. Canvas-based, so `chart.toBase64Image()` produces the PNG used for both the standalone chart-image export and the embedded image in the PDF export — no separate rendering/conversion step needed. Vanilla-JS friendly, no framework dependency.
+
+## Model Selection
+
+- **Translate call (Call 1):** `claude-sonnet-5`. Bounded extraction against a known schema (real dimensions/metrics from `properties.getMetadata`) — Sonnet's accuracy on field-mapping is worth the small premium over Haiku, since a wrong field means a retry loop.
+- **Compose call (Call 2):** `claude-haiku-4-5-20251001`. Describing numbers already in hand is a simpler task; Haiku is fast and cheap, and there's no schema-matching risk at this step.
+- Both model choices are hardcoded in one config location, not exposed as a runtime picker — no routing logic, no model-selection UI. Revisit a specific model only if a specific failure mode shows up in practice (e.g., translate call consistently mis-mapping fields → try Opus for that call specifically), not preemptively.
+- `effort` parameter left at API default (`high`) unless a real accuracy or latency problem is observed.
+- Opus 4.8 / Fable 5 intentionally not used — both steps here are bounded, well-defined tasks, not the open-ended multi-step reasoning those tiers are for.
+
+## Storage (chrome.storage.local schema, draft)
 
 ```js
 {
@@ -155,6 +168,7 @@ This is scoped for one person, one Google identity, running locally. It is not a
 ## Manifest / Permissions (Manifest V3)
 
 - `identity` — for OAuth
+- `sidePanel` — for the persistent extension UI and pipeline context
 - `storage` — for local key/cache storage
 - Host permissions for `analyticsdata.googleapis.com` and `api.anthropic.com`
 - No `activeTab`, no content scripts, no broad host permissions — this doesn't touch web pages
@@ -168,7 +182,6 @@ This is scoped for one person, one Google identity, running locally. It is not a
 
 ## Open Questions
 
-- Side panel vs. popup UI — side panel probably better for a "type a question, read an answer" flow that might involve back-and-forth
 - Whether GA4 metadata should be refetched per session or cached longer (dimensions/metrics rarely change)
 - Whether query history is worth persisting at all in v1, or just noise
 - PDF export library choice (client-side, e.g. jsPDF or similar) — pick during Phase 6 implementation, not before
@@ -178,3 +191,7 @@ This is scoped for one person, one Google identity, running locally. It is not a
 
 - Device scope: single machine, no sync/export-import needed (see Device Scope above)
 - Sharing model: export files (CSV/chart/PDF), Pete distributes manually outside the extension — no hosted links, no second user
+- Extension UI: side panel, not popup.
+- Pipeline lifecycle: orchestrated by the side-panel page; closing the panel cancels active work (see Service Worker Lifecycle above).
+- Chart library: Chart.js (see Chart Type Selection above)
+- Model selection: Sonnet 5 for translate, Haiku 4.5 for compose, hardcoded — no runtime model picker (see Model Selection above)
