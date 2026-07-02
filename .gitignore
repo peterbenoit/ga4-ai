@@ -1,1 +1,9 @@
 .DS_Store
+node_modules/
+coverage/
+.env
+.env.*
+!.env.example
+local-config.*
+secrets.*
+.superpowers/
