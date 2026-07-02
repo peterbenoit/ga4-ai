@@ -65,7 +65,11 @@ Automated verification consists of a passing `npm test` run. Manual verification
 
 ## Error and Secret Handling
 
-- No Anthropic key, OAuth token, or local credential is committed.
+- This is a personal, single-user extension. Real keys may be stored in an ignored local configuration file when useful for local development or installation.
+- No Anthropic key, OAuth token, or local credential is committed or added to Git history.
+- Because the extension has no build step and cannot read `.env` directly, any file-based local configuration must use an ignored extension-readable format rather than a committed source file.
+- OAuth access tokens remain managed by `chrome.identity`; embedding them would break refresh behavior and is not a stable configuration mechanism.
+- The options-page flow for storing the Anthropic key in `chrome.storage.local` remains the v1 runtime design required by `REQUIREMENTS.md`.
 - No API key or token is logged.
 - Manifest or side-panel setup failures remain visible through Chrome's extension error reporting; the skeleton does not add fallback behavior that could conceal them.
 - An OAuth client identifier, if required in the manifest during Phase 0, is configuration rather than a secret, but it must match the existing Chrome-extension OAuth client before manual verification can pass.
