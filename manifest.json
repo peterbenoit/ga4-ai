@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "GA4 Query Assistant",
+  "version": "0.1.0",
+  "description": "Ask plain-language questions about GA4 data.",
+  "minimum_chrome_version": "114",
+  "action": {
+    "default_title": "Open GA4 Query Assistant"
+  },
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "side_panel": {
+    "default_path": "src/sidepanel.html"
+  },
+  "permissions": [
+    "identity",
+    "sidePanel",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://analyticsdata.googleapis.com/*",
+    "https://api.anthropic.com/*"
+  ],
+  "oauth2": {
+    "client_id": "442168594815-0rj9rl8i7m3tn4e1ibuckiv2vt8sf41r.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/analytics.readonly"
+    ]
+  }
+}
