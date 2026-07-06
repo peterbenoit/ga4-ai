@@ -65,11 +65,23 @@ const queryController = createQueryController({
   }
 });
 
+const propertySelect = document.querySelector("#property-select");
+const propertyChip = document.querySelector("#toolbar-property-chip");
+
+function updatePropertyChip() {
+  const selectedOption = propertySelect.selectedOptions[0];
+  propertyChip.textContent = selectedOption && !selectedOption.disabled
+    ? `Property: ${selectedOption.textContent}`
+    : "Property: none selected";
+}
+
+propertySelect.addEventListener("change", updatePropertyChip);
+
 const propertyController = createPropertyController({
   listProperties: listAccessibleProperties,
   fetchMetadata: fetchPropertyMetadata,
   store: createPropertyStore(),
-  select: document.querySelector("#property-select"),
+  select: propertySelect,
   refreshButton: document.querySelector("#refresh-metadata"),
   status: document.querySelector("#metadata-status"),
   createOption(property) {
@@ -79,6 +91,7 @@ const propertyController = createPropertyController({
     return option;
   },
   onMetadataReady({ propertyId, metadata }) {
+    updatePropertyChip();
     queryController.setContext({
       propertyId,
       metadata,
