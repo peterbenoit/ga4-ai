@@ -7,5 +7,6 @@ coverage/
 local-config.*
 secrets.*
 .superpowers/
-.vscode/*
-.claude/*
+.vscode/
+.claude/
+GA4_Question_Reference/
