@@ -140,6 +140,7 @@ test("valid translation displays the exact GA4 request", async () => {
   assert.deepEqual(composeCalls, [{
     question: "Active users this month",
     report,
+    request,
     apiKey: "key"
   }]);
   assert.equal(elements.answer.textContent, "12 active users in the last 5 days.");

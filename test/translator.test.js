@@ -39,6 +39,32 @@ test("translator passes actual date, timezone, metadata, and fixed model to Clau
   assert.deepEqual(result, { type: "query", request: validRequest });
 });
 
+test("an explicit UI-selected date range is passed through and Claude is told not to infer dates", async () => {
+  const calls = [];
+  const request = {
+    dimensions: [],
+    metrics: [{ name: "activeUsers" }],
+    dateRanges: [{ startDate: "2026-06-07", endDate: "2026-07-06" }]
+  };
+  const call = async (options) => {
+    calls.push(options);
+    return JSON.stringify({ type: "query", request });
+  };
+
+  const result = await translateQuestion({
+    question: "How many active users?",
+    metadata,
+    today: "2026-07-06",
+    dateRange: { startDate: "2026-06-07", endDate: "2026-07-06" },
+    apiKey: "key",
+    call
+  });
+
+  assert.match(calls[0].system, /2026-06-07 to 2026-07-06/);
+  assert.match(calls[0].system, /never infer or ask about dates/);
+  assert.deepEqual(result, { type: "query", request });
+});
+
 test("translator returns a distinct clarification outcome", async () => {
   const call = async () => JSON.stringify({
     type: "clarification",

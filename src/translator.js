@@ -2,7 +2,11 @@ import { callClaude } from "./anthropic-client.js";
 import { TRANSLATOR_MODEL } from "./config.js";
 import { validateReportRequest } from "./request-validator.js";
 
-function buildSystemPrompt({ metadata, today }) {
+function buildSystemPrompt({ metadata, today, dateRange }) {
+  const dateInstruction = dateRange
+    ? `A date range has already been chosen in the UI: ${dateRange.startDate} to ${dateRange.endDate}. Always use exactly this as the first entry in dateRanges — never infer or ask about dates. If the question explicitly asks to compare against another period (e.g. "vs last year"), add a second dateRanges entry for that comparison period computed relative to the chosen range, and leave dimensions empty per the comparison rule below.`
+    : `Resolve relative dates against the property timezone.`;
+
   return `You translate plain-language analytics questions into Google Analytics Data API runReport requests.
 
 Return exactly one JSON object and no markdown.
@@ -13,7 +17,8 @@ Valid outcomes:
 
 Use clarification when a necessary campaign, segment, date, or comparison is missing. Do not guess.
 Use only dimension and metric apiName values present in the metadata below.
-Resolve relative dates against the property timezone.
+When dateRanges has more than one entry (a comparison between two periods), leave dimensions empty. GA4 returns exactly one row per date range, in the order given, with no dimension breakdown. It cannot label which row is which period on its own, and combining a dimension breakdown with a period comparison in one request isn't supported here — if the question needs both, ask a clarifying question about which one matters more instead of guessing.
+${dateInstruction}
 Today: ${today}
 Property timezone: ${metadata.timeZone}
 Dimensions: ${JSON.stringify(metadata.dimensions)}
@@ -47,10 +52,11 @@ export async function translateQuestion({
   question,
   metadata,
   today,
+  dateRange = null,
   apiKey,
   call = callClaude
 }) {
-  const system = buildSystemPrompt({ metadata, today });
+  const system = buildSystemPrompt({ metadata, today, dateRange });
   let user = question;
   let lastInspection;
 

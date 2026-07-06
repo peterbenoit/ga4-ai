@@ -37,6 +37,10 @@ export function validateReportRequest(request, metadata) {
       errors.push(`Unknown dimension: ${name}`);
     }
   }
+
+  if ((request.dateRanges ?? []).length > 1 && (request.dimensions ?? []).length > 0) {
+    errors.push("A comparison with multiple dateRanges can't be combined with a dimension breakdown in one request — GA4 can't label which row belongs to which period in that case.");
+  }
   for (const { name } of request.metrics ?? []) {
     if (!metricNames.has(name)) {
       errors.push(`Unknown metric: ${name}`);

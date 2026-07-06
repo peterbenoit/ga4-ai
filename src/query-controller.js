@@ -31,6 +31,7 @@ export function createQueryController({
   output,
   answer,
   openOptions,
+  getDateRange = () => null,
   now = () => new Date()
 }) {
   let metadata = null;
@@ -69,6 +70,7 @@ export function createQueryController({
         question,
         metadata,
         today: todayInTimeZone(now(), metadata.timeZone),
+        dateRange: getDateRange(),
         apiKey
       });
 
@@ -91,7 +93,7 @@ export function createQueryController({
         } else {
           status.textContent = "Composing answer…";
           try {
-            answer.textContent = await compose({ question, report, apiKey });
+            answer.textContent = await compose({ question, report, request: result.request, apiKey });
             answer.hidden = false;
           } catch (composeError) {
             status.textContent = errorMessage(composeError);

@@ -53,6 +53,34 @@ test("nested filter field names are validated against the correct metadata type"
   ]);
 });
 
+test("a multi-range comparison with no dimension breakdown is valid", () => {
+  const errors = validateReportRequest({
+    dimensions: [],
+    metrics: [{ name: "activeUsers" }],
+    dateRanges: [
+      { startDate: "2026-06-01", endDate: "2026-06-30" },
+      { startDate: "2025-06-01", endDate: "2025-06-30" }
+    ]
+  }, metadata);
+
+  assert.deepEqual(errors, []);
+});
+
+test("a multi-range comparison combined with a dimension breakdown is rejected", () => {
+  const errors = validateReportRequest({
+    dimensions: [{ name: "country" }],
+    metrics: [{ name: "activeUsers" }],
+    dateRanges: [
+      { startDate: "2026-06-01", endDate: "2026-06-30" },
+      { startDate: "2025-06-01", endDate: "2025-06-30" }
+    ]
+  }, metadata);
+
+  assert.deepEqual(errors, [
+    "A comparison with multiple dateRanges can't be combined with a dimension breakdown in one request — GA4 can't label which row belongs to which period in that case."
+  ]);
+});
+
 test("missing report essentials are rejected", () => {
   const errors = validateReportRequest({}, metadata);
 

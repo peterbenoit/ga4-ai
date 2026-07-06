@@ -32,6 +32,41 @@ test("composeAnswer sends the question and report data to the fixed composer mod
   assert.equal(result, "Yes, active users grew from 120 to 150.");
 });
 
+test("composeAnswer includes a date range mapping when the request compares multiple periods", async () => {
+  let options;
+  const report = {
+    headers: ["dateRange", "activeUsers"],
+    rows: [
+      ["date_range_0", "150"],
+      ["date_range_1", "120"]
+    ],
+    rowCount: 2,
+    raw: {}
+  };
+  const request = {
+    dimensions: [{ name: "dateRange" }],
+    metrics: [{ name: "activeUsers" }],
+    dateRanges: [
+      { startDate: "2026-06-01", endDate: "2026-06-30" },
+      { startDate: "2025-06-01", endDate: "2025-06-30" }
+    ]
+  };
+
+  await composeAnswer({
+    question: "How does this June compare to last June?",
+    report,
+    request,
+    apiKey: "key",
+    async call(value) {
+      options = value;
+      return "Active users grew from 120 to 150 year over year.";
+    }
+  });
+
+  assert.match(options.user, /date_range_0 = 2026-06-01 to 2026-06-30/);
+  assert.match(options.user, /date_range_1 = 2025-06-01 to 2025-06-30/);
+});
+
 test("composeAnswer propagates errors from the Claude call", async () => {
   await assert.rejects(
     composeAnswer({

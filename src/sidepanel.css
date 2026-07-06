@@ -231,6 +231,40 @@ body {
   gap: var(--space-3);
 }
 
+.date-range-fields {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: 1fr 1fr;
+}
+
+.date-range-fields[hidden] {
+  display: none;
+}
+
+.date-input {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.date-input__control {
+  align-items: center;
+  display: flex;
+  position: relative;
+}
+
+.date-input__icon {
+  font-size: 0.8125rem;
+  left: 0.5rem;
+  pointer-events: none;
+  position: absolute;
+}
+
+.date-input__control .field__control {
+  cursor: pointer;
+  padding-inline-start: 1.75rem;
+}
+
 .status-line {
   color: var(--color-text-muted);
   font-size: 0.8125rem;

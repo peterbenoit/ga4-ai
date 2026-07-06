@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>GA4 Query Assistant</title>
+    <link rel="stylesheet" href="vendor/flatpickr/flatpickr.min.css">
     <link rel="stylesheet" href="sidepanel.css">
     <script type="module" src="sidepanel.js"></script>
   </head>
@@ -50,6 +51,34 @@
       <section class="tabpanel is-active" id="panel-ask" data-tabpanel="ask" role="tabpanel" aria-labelledby="tab-ask">
         <p class="section-title">Question</p>
         <form id="question-form" class="query-form">
+          <div class="field">
+            <label class="field__label" for="date-preset">Date range</label>
+            <select class="field__control" id="date-preset">
+              <option value="">Let the question decide</option>
+              <option value="last7">Last 7 days</option>
+              <option value="last30">Last 30 days</option>
+              <option value="last90">Last 90 days</option>
+              <option value="thisMonth">This month</option>
+              <option value="lastMonth">Last month</option>
+              <option value="custom">Custom range</option>
+            </select>
+          </div>
+          <div class="date-range-fields" id="date-range-custom" hidden>
+            <div class="date-input">
+              <label class="field__label" for="date-start">Start</label>
+              <div class="date-input__control">
+                <span class="date-input__icon" aria-hidden="true">📅</span>
+                <input class="field__control" id="date-start" type="text" placeholder="Select a date" readonly>
+              </div>
+            </div>
+            <div class="date-input">
+              <label class="field__label" for="date-end">End</label>
+              <div class="date-input__control">
+                <span class="date-input__icon" aria-hidden="true">📅</span>
+                <input class="field__control" id="date-end" type="text" placeholder="Select a date" readonly>
+              </div>
+            </div>
+          </div>
           <div class="field">
             <label class="field__label" for="question">What do you want to know?</label>
             <textarea class="field__control field__control--textarea" id="question" rows="4" placeholder="e.g. Did the spring campaign move organic traffic?" disabled></textarea>

@@ -95,6 +95,18 @@ test("GA4 API errors expose the real API message", async () => {
   );
 });
 
+test("GA4 API errors carry the HTTP status so callers can detect an expired token", async () => {
+  const fetchImpl = async () => jsonResponse(
+    { error: { message: "Invalid credentials" } },
+    { ok: false, status: 401 }
+  );
+
+  await assert.rejects(
+    listAccessibleProperties({ token: "secret", fetchImpl }),
+    (error) => error.status === 401
+  );
+});
+
 test("runReport posts the validated request and normalizes raw rows", async () => {
   let captured;
   const request = {
@@ -135,6 +147,55 @@ test("runReport posts the validated request and normalizes raw rows", async () =
     rowCount: 1,
     raw
   });
+});
+
+test("runReport labels rows with a synthetic dateRange column for an unlabeled multi-range comparison", async () => {
+  const request = {
+    dimensions: [],
+    metrics: [{ name: "activeUsers" }],
+    dateRanges: [
+      { startDate: "2026-06-01", endDate: "2026-06-30" },
+      { startDate: "2025-06-01", endDate: "2025-06-30" }
+    ]
+  };
+  const raw = {
+    dimensionHeaders: [],
+    metricHeaders: [{ name: "activeUsers" }],
+    rows: [
+      { dimensionValues: [], metricValues: [{ value: "150" }] },
+      { dimensionValues: [], metricValues: [{ value: "120" }] }
+    ],
+    rowCount: 2
+  };
+  const fetchImpl = async () => jsonResponse(raw);
+
+  const report = await runReport({ propertyId: "100", request, token: "secret", fetchImpl });
+
+  assert.deepEqual(report.headers, ["dateRange", "activeUsers"]);
+  assert.deepEqual(report.rows, [
+    ["date_range_0", "150"],
+    ["date_range_1", "120"]
+  ]);
+});
+
+test("runReport leaves rows alone when GA4 already returns real dimension breakdowns", async () => {
+  const request = {
+    dimensions: [{ name: "country" }],
+    metrics: [{ name: "activeUsers" }],
+    dateRanges: [{ startDate: "2026-06-01", endDate: "2026-06-30" }]
+  };
+  const raw = {
+    dimensionHeaders: [{ name: "country" }],
+    metricHeaders: [{ name: "activeUsers" }],
+    rows: [{ dimensionValues: [{ value: "United States" }], metricValues: [{ value: "12" }] }],
+    rowCount: 1
+  };
+  const fetchImpl = async () => jsonResponse(raw);
+
+  const report = await runReport({ propertyId: "100", request, token: "secret", fetchImpl });
+
+  assert.deepEqual(report.headers, ["country", "activeUsers"]);
+  assert.deepEqual(report.rows, [["United States", "12"]]);
 });
 
 test("runReport preserves an empty result as a non-error", async () => {

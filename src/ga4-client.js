@@ -19,7 +19,9 @@ async function fetchJson(url, {
 
   if (!response.ok) {
     const message = data?.error?.message ?? "Unknown error";
-    throw new Error(`GA4 API error (${response.status}): ${message}`);
+    const error = new Error(`GA4 API error (${response.status}): ${message}`);
+    error.status = response.status;
+    throw error;
   }
 
   return data;
@@ -86,11 +88,16 @@ export async function runReport({
     `${DATA_API}/properties/${propertyId}:runReport`,
     { token, fetchImpl, method: "POST", body: request }
   );
+  const isUnlabeledComparison = (request.dateRanges?.length ?? 0) > 1
+    && (raw.dimensionHeaders ?? []).length === 0;
+
   const headers = [
+    ...(isUnlabeledComparison ? ["dateRange"] : []),
     ...(raw.dimensionHeaders ?? []).map(({ name }) => name),
     ...(raw.metricHeaders ?? []).map(({ name }) => name)
   ];
-  const rows = (raw.rows ?? []).map((row) => [
+  const rows = (raw.rows ?? []).map((row, index) => [
+    ...(isUnlabeledComparison ? [`date_range_${index}`] : []),
     ...(row.dimensionValues ?? []).map(({ value }) => value),
     ...(row.metricValues ?? []).map(({ value }) => value)
   ]);

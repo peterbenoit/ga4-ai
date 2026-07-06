@@ -1,6 +1,9 @@
 import { getGoogleAccessToken } from "./auth.js";
 import { createAuthController } from "./auth-controller.js";
+import { withAuthRetry } from "./auth-retry.js";
 import { composeAnswer } from "./composer.js";
+import { createDateRangePicker } from "./date-range-picker.js";
+import flatpickr from "./vendor/flatpickr/index.js";
 import {
   fetchPropertyMetadata,
   listAccessibleProperties,
@@ -14,6 +17,15 @@ import { initTabs } from "./tabs.js";
 import { translateQuestion } from "./translator.js";
 
 let googleToken = "";
+
+async function refreshGoogleToken(staleToken) {
+  googleToken = await getGoogleAccessToken({ interactive: false, staleToken });
+  return googleToken;
+}
+
+const runReportWithRetry = withAuthRetry(runReport, refreshGoogleToken);
+const fetchPropertyMetadataWithRetry = withAuthRetry(fetchPropertyMetadata, refreshGoogleToken);
+const listAccessiblePropertiesWithRetry = withAuthRetry(listAccessibleProperties, refreshGoogleToken);
 
 initTabs({
   tabButtons: Array.from(document.querySelectorAll(".tab")),
@@ -50,9 +62,17 @@ function renderReport(report) {
   table.hidden = false;
 }
 
+const dateRangePicker = createDateRangePicker({
+  presetSelect: document.querySelector("#date-preset"),
+  customFields: document.querySelector("#date-range-custom"),
+  startInput: document.querySelector("#date-start"),
+  endInput: document.querySelector("#date-end"),
+  flatpickrFactory: flatpickr
+});
+
 const queryController = createQueryController({
   translate: translateQuestion,
-  runReport,
+  runReport: runReportWithRetry,
   renderReport,
   compose: composeAnswer,
   store: createSettingsStore(),
@@ -63,6 +83,7 @@ const queryController = createQueryController({
   status: document.querySelector("#translation-status"),
   output: document.querySelector("#translation-output"),
   answer: document.querySelector("#answer-output"),
+  getDateRange: dateRangePicker.getRange,
   openOptions() {
     return chrome.runtime.openOptionsPage();
   }
@@ -86,8 +107,8 @@ function updatePropertyChip() {
 propertySelect.addEventListener("change", updatePropertyChip);
 
 const propertyController = createPropertyController({
-  listProperties: listAccessibleProperties,
-  fetchMetadata: fetchPropertyMetadata,
+  listProperties: listAccessiblePropertiesWithRetry,
+  fetchMetadata: fetchPropertyMetadataWithRetry,
   store: createPropertyStore(),
   select: propertySelect,
   refreshButton: document.querySelector("#refresh-metadata"),
