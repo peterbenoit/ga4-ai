@@ -174,3 +174,28 @@ test("property loading errors remain visible", async () => {
   );
   assert.equal(elements.select.disabled, true);
 });
+
+test("loaded metadata is reported to downstream consumers", async () => {
+  const elements = createElements();
+  const loaded = [];
+  const controller = createPropertyController({
+    ...elements,
+    store: createStore({ cache: { "100": cachedMetadata } }),
+    async listProperties() {
+      return [properties[0]];
+    },
+    async fetchMetadata() {
+      return cachedMetadata;
+    },
+    createOption(property) {
+      return { value: property.id };
+    },
+    onMetadataReady(value) {
+      loaded.push(value);
+    }
+  });
+
+  await controller.initialize("token-value");
+
+  assert.deepEqual(loaded, [{ propertyId: "100", metadata: cachedMetadata }]);
+});

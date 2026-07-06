@@ -13,7 +13,8 @@ export function createPropertyController({
   select,
   refreshButton,
   status,
-  createOption
+  createOption,
+  onMetadataReady = () => {}
 }) {
   let token = "";
 
@@ -37,6 +38,7 @@ export function createPropertyController({
       }
 
       renderMetadata(metadata);
+      onMetadataReady({ propertyId, metadata });
       return metadata;
     } catch (error) {
       status.textContent = errorMessage(error);

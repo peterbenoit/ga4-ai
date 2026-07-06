@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GA4 Query Assistant settings</title>
+    <link rel="stylesheet" href="sidepanel.css">
+    <script type="module" src="options.js"></script>
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">GA4 Query Assistant</p>
+      <h1>Settings</h1>
+      <form id="api-key-form">
+        <label for="anthropic-api-key">Anthropic API key</label>
+        <input id="anthropic-api-key" type="password" autocomplete="off" required>
+        <p>The key is stored only in Chrome local storage.</p>
+        <button id="save-key" type="submit">Save API key</button>
+      </form>
+      <p id="options-status" role="status">Checking API key…</p>
+    </main>
+  </body>
+</html>

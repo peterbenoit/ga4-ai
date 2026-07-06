@@ -14,6 +14,7 @@
   "side_panel": {
     "default_path": "src/sidepanel.html"
   },
+  "options_page": "src/options.html",
   "permissions": [
     "identity",
     "sidePanel",

@@ -30,7 +30,8 @@ h2 {
 }
 
 .auth-panel,
-.property-panel {
+.property-panel,
+.query-panel {
   border-block-start: 1px solid color-mix(in srgb, currentColor 20%, transparent);
   margin-block-start: 1.5rem;
   padding-block-start: 1rem;
@@ -48,6 +49,31 @@ select {
   max-width: 100%;
   padding: 0.625rem;
   width: 100%;
+}
+
+input,
+textarea {
+  box-sizing: border-box;
+  font: inherit;
+  max-width: 100%;
+  padding: 0.625rem;
+  width: 100%;
+}
+
+textarea {
+  resize: vertical;
+}
+
+form button {
+  margin-block-start: 0.75rem;
+}
+
+pre {
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  border-radius: 0.25rem;
+  overflow: auto;
+  padding: 0.75rem;
+  white-space: pre-wrap;
 }
 
 button {

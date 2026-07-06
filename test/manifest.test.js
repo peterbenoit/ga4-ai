@@ -16,6 +16,7 @@ test("manifest declares the Phase 0 MV3 package contract", async () => {
   assert.equal(manifest.minimum_chrome_version, "114");
   assert.equal(manifest.background.service_worker, "src/background.js");
   assert.equal(manifest.side_panel.default_path, "src/sidepanel.html");
+  assert.equal(manifest.options_page, "src/options.html");
   assert.equal(manifest.action.default_title, "Open GA4 Query Assistant");
   assert.deepEqual([...manifest.permissions].sort(), ["identity", "sidePanel", "storage"]);
   assert.deepEqual([...manifest.host_permissions].sort(), [

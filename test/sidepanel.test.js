@@ -36,3 +36,23 @@ test("side panel initializes property loading after authentication", async () =>
   assert.match(script, /fetchPropertyMetadata/);
   assert.match(script, /onConnected/);
 });
+
+test("side panel exposes question translation controls and output", async () => {
+  const html = await readFile(new URL("src/sidepanel.html", rootUrl), "utf8");
+
+  assert.match(html, /id="question-form"/);
+  assert.match(html, /id="question"[^>]*disabled/);
+  assert.match(html, /id="translate-question"[^>]*disabled/);
+  assert.match(html, /id="translation-status" role="status"/);
+  assert.match(html, /id="translation-output"[^>]*hidden/);
+  assert.match(html, /id="open-settings"[^>]*hidden/);
+});
+
+test("side panel wires metadata into the query controller", async () => {
+  const script = await readFile(new URL("src/sidepanel.js", rootUrl), "utf8");
+
+  assert.match(script, /createQueryController/);
+  assert.match(script, /translateQuestion/);
+  assert.match(script, /queryController\.setMetadata/);
+  assert.match(script, /openOptionsPage/);
+});
