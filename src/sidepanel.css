@@ -343,6 +343,28 @@ body {
   text-align: end;
 }
 
+/* Answer */
+
+.answer-block {
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  margin: 0;
+  padding: var(--space-3);
+}
+
+.request-details summary {
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.request-details .output-block {
+  margin-block-start: var(--space-2);
+}
+
 /* Output / data */
 
 .output-block {

@@ -19,6 +19,9 @@ export function createQueryController({
     throw new Error("GA4 report execution is unavailable.");
   },
   renderReport = () => {},
+  compose = async () => {
+    throw new Error("Answer composition is unavailable.");
+  },
   store,
   form,
   input,
@@ -26,6 +29,7 @@ export function createQueryController({
   settingsButton,
   status,
   output,
+  answer,
   openOptions,
   now = () => new Date()
 }) {
@@ -50,6 +54,7 @@ export function createQueryController({
     submitButton.disabled = true;
     settingsButton.hidden = true;
     output.hidden = true;
+    answer.hidden = true;
     status.textContent = "Translating question into a GA4 request…";
 
     try {
@@ -80,9 +85,20 @@ export function createQueryController({
           token
         });
         renderReport(report);
-        status.textContent = report.rowCount === 0
-          ? "No data matches this request."
-          : `Report returned ${report.rowCount} ${report.rowCount === 1 ? "row" : "rows"}.`;
+
+        if (report.rowCount === 0) {
+          status.textContent = "No data matches this request.";
+        } else {
+          status.textContent = "Composing answer…";
+          try {
+            answer.textContent = await compose({ question, report, apiKey });
+            answer.hidden = false;
+          } catch (composeError) {
+            status.textContent = errorMessage(composeError);
+            return;
+          }
+          status.textContent = `Report returned ${report.rowCount} ${report.rowCount === 1 ? "row" : "rows"}.`;
+        }
       }
     } catch (error) {
       status.textContent = errorMessage(error);

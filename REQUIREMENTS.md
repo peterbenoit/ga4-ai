@@ -26,33 +26,33 @@ Single source of truth for what v1 does and doesn't include. See `ARCHITECTURE.m
 
 ## Phase 2 — GA4 Metadata & Property Picker
 
-- [ ] Google Analytics Admin API enabled in the Google Cloud project
-- [ ] `properties.getMetadata` call implemented and returns real dimensions/metrics
-- [ ] List of accessible GA4 properties fetched and shown in a picker
-- [ ] Last-used property persisted and defaulted on next open
-- [ ] Metadata cached locally with a fetch timestamp
-- [ ] Manual "refresh metadata" action available (in case dimensions/metrics change)
+- [x] Google Analytics Admin API enabled in the Google Cloud project
+- [x] `properties.getMetadata` call implemented and returns real dimensions/metrics
+- [x] List of accessible GA4 properties fetched and shown in a picker
+- [x] Last-used property persisted and defaulted on next open
+- [x] Metadata cached locally with a fetch timestamp
+- [x] Manual "refresh metadata" action available (in case dimensions/metrics change)
 
 ## Phase 3 — Query Translation (NL → GA4 request)
 
-- [ ] Model set to `claude-sonnet-5`, hardcoded in one config location (no runtime picker)
-- [ ] System prompt built describing `runReport` request shape
-- [ ] Property's real metadata injected into the prompt context, including property timezone
-- [ ] Today's actual date passed explicitly into the prompt (never inferred by the model)
-- [ ] Relative date phrases resolved against property timezone, not browser local time
-- [ ] Claude call returns JSON-only structured request
-- [ ] Claude call can return a distinct "needs clarification" outcome for vague/ambiguous questions, separate from a malformed request
-- [ ] Clarification outcome surfaces a specific follow-up prompt to Pete, not a generic error
-- [ ] Returned request validated against actual available dimensions/metrics
-- [ ] Invalid request triggers one retry with the validation error fed back
-- [ ] Second failure surfaces clearly to Pete rather than guessing
+- [x] Model set to `claude-sonnet-5`, hardcoded in one config location (no runtime picker)
+- [x] System prompt built describing `runReport` request shape
+- [x] Property's real metadata injected into the prompt context, including property timezone
+- [x] Today's actual date passed explicitly into the prompt (never inferred by the model)
+- [x] Relative date phrases resolved against property timezone, not browser local time
+- [x] Claude call returns JSON-only structured request
+- [x] Claude call can return a distinct "needs clarification" outcome for vague/ambiguous questions, separate from a malformed request
+- [x] Clarification outcome surfaces a specific follow-up prompt to Pete, not a generic error
+- [x] Returned request validated against actual available dimensions/metrics
+- [x] Invalid request triggers one retry with the validation error fed back
+- [x] Second failure surfaces clearly to Pete rather than guessing
 
 ## Phase 4 — Query Execution
 
-- [ ] `runReport` call implemented against GA4 Data API
-- [ ] Handles empty result sets gracefully (distinct from errors)
-- [ ] Handles GA4 API errors (bad date range, permission denied, quota) with real error text shown
-- [ ] Raw result rows available for inspection, not just the summarized answer
+- [x] `runReport` call implemented against GA4 Data API
+- [x] Handles empty result sets gracefully (distinct from errors)
+- [x] Handles GA4 API errors (bad date range, permission denied, quota) with real error text shown
+- [x] Raw result rows available for inspection, not just the summarized answer
 
 ## Phase 5 — Answer Composition
 

@@ -57,7 +57,11 @@
           <button class="btn btn--primary" id="translate-question" type="submit" disabled>Build GA4 request</button>
         </form>
         <p class="status-line" id="translation-status" role="status">Load property metadata to ask a question.</p>
-        <pre class="output-block" id="translation-output" hidden></pre>
+        <p class="answer-block" id="answer-output" hidden></p>
+        <details class="request-details">
+          <summary>GA4 request sent</summary>
+          <pre class="output-block" id="translation-output" hidden></pre>
+        </details>
       </section>
 
       <section class="tabpanel" id="panel-property" data-tabpanel="property" hidden role="tabpanel" aria-labelledby="tab-property">

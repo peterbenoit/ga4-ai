@@ -1,5 +1,6 @@
 import { getGoogleAccessToken } from "./auth.js";
 import { createAuthController } from "./auth-controller.js";
+import { composeAnswer } from "./composer.js";
 import {
   fetchPropertyMetadata,
   listAccessibleProperties,
@@ -53,6 +54,7 @@ const queryController = createQueryController({
   translate: translateQuestion,
   runReport,
   renderReport,
+  compose: composeAnswer,
   store: createSettingsStore(),
   form: document.querySelector("#question-form"),
   input: document.querySelector("#question"),
@@ -60,6 +62,7 @@ const queryController = createQueryController({
   settingsButton: document.querySelector("#open-settings"),
   status: document.querySelector("#translation-status"),
   output: document.querySelector("#translation-output"),
+  answer: document.querySelector("#answer-output"),
   openOptions() {
     return chrome.runtime.openOptionsPage();
   }

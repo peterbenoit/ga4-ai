@@ -29,7 +29,8 @@ function createElements() {
     submitButton: { disabled: true },
     settingsButton,
     status: { textContent: "" },
-    output: { textContent: "", hidden: true }
+    output: { textContent: "", hidden: true },
+    answer: { textContent: "", hidden: true }
   };
 }
 
@@ -115,9 +116,14 @@ test("valid translation displays the exact GA4 request", async () => {
     renderReport(value) {
       renderedReports.push(value);
     },
+    async compose(value) {
+      composeCalls.push(value);
+      return "12 active users in the last 5 days.";
+    },
     now: () => new Date("2026-07-07T02:30:00Z"),
     openOptions() {}
   });
+  const composeCalls = [];
   controller.setContext({ metadata, propertyId: "100", token: "google-token" });
   elements.input.value = "Active users this month";
 
@@ -131,6 +137,13 @@ test("valid translation displays the exact GA4 request", async () => {
     token: "google-token"
   }]);
   assert.deepEqual(renderedReports, [report]);
+  assert.deepEqual(composeCalls, [{
+    question: "Active users this month",
+    report,
+    apiKey: "key"
+  }]);
+  assert.equal(elements.answer.textContent, "12 active users in the last 5 days.");
+  assert.equal(elements.answer.hidden, false);
   assert.equal(elements.status.textContent, "Report returned 1 row.");
   assert.equal(elements.output.textContent, JSON.stringify(request, null, 2));
 });
@@ -159,6 +172,38 @@ test("empty report is a distinct successful outcome", async () => {
 
   assert.equal(elements.status.textContent, "No data matches this request.");
   assert.equal(renderedReports[0].rowCount, 0);
+  assert.equal(elements.answer.hidden, true);
+});
+
+test("answer composition failure surfaces without losing the rendered report", async () => {
+  const elements = createElements();
+  const renderedReports = [];
+  const report = { headers: ["activeUsers"], rows: [["12"]], rowCount: 1, raw: {} };
+  const controller = createQueryController({
+    ...elements,
+    store: { async getAnthropicApiKey() { return "key"; } },
+    async translate() {
+      return { type: "query", request: { metrics: [{ name: "activeUsers" }] } };
+    },
+    async runReport() {
+      return report;
+    },
+    renderReport(value) {
+      renderedReports.push(value);
+    },
+    async compose() {
+      throw new Error("Anthropic API error (529): overloaded");
+    },
+    openOptions() {}
+  });
+  controller.setContext({ metadata, propertyId: "100", token: "google-token" });
+  elements.input.value = "Active users this month";
+
+  await elements.form.submit();
+
+  assert.deepEqual(renderedReports, [report]);
+  assert.equal(elements.answer.hidden, true);
+  assert.equal(elements.status.textContent, "Anthropic API error (529): overloaded");
 });
 
 test("translation failures remain visible", async () => {
