@@ -76,6 +76,25 @@ pre {
   white-space: pre-wrap;
 }
 
+table {
+  border-collapse: collapse;
+  margin-block-start: 1rem;
+  width: 100%;
+}
+
+caption {
+  font-weight: 700;
+  padding-block-end: 0.5rem;
+  text-align: start;
+}
+
+th,
+td {
+  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  padding: 0.5rem;
+  text-align: start;
+}
+
 button {
   background: #1a73e8;
   border: 0;

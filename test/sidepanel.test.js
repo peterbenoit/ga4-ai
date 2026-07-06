@@ -46,6 +46,7 @@ test("side panel exposes question translation controls and output", async () => 
   assert.match(html, /id="translation-status" role="status"/);
   assert.match(html, /id="translation-output"[^>]*hidden/);
   assert.match(html, /id="open-settings"[^>]*hidden/);
+  assert.match(html, /id="report-table"[^>]*hidden/);
 });
 
 test("side panel wires metadata into the query controller", async () => {
@@ -53,6 +54,8 @@ test("side panel wires metadata into the query controller", async () => {
 
   assert.match(script, /createQueryController/);
   assert.match(script, /translateQuestion/);
-  assert.match(script, /queryController\.setMetadata/);
+  assert.match(script, /queryController\.setContext/);
+  assert.match(script, /runReport/);
+  assert.match(script, /renderReport/);
   assert.match(script, /openOptionsPage/);
 });

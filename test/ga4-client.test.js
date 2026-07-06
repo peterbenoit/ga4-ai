@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { fetchPropertyMetadata, listAccessibleProperties } from "../src/ga4-client.js";
+import {
+  fetchPropertyMetadata,
+  listAccessibleProperties,
+  runReport
+} from "../src/ga4-client.js";
 
 function jsonResponse(body, { ok = true, status = 200 } = {}) {
   return {
@@ -89,4 +93,64 @@ test("GA4 API errors expose the real API message", async () => {
     listAccessibleProperties({ token: "secret", fetchImpl }),
     new Error("GA4 API error (403): User does not have access")
   );
+});
+
+test("runReport posts the validated request and normalizes raw rows", async () => {
+  let captured;
+  const request = {
+    dimensions: [{ name: "country" }],
+    metrics: [{ name: "activeUsers" }],
+    dateRanges: [{ startDate: "2026-06-01", endDate: "2026-06-30" }]
+  };
+  const raw = {
+    dimensionHeaders: [{ name: "country" }],
+    metricHeaders: [{ name: "activeUsers", type: "TYPE_INTEGER" }],
+    rows: [{
+      dimensionValues: [{ value: "United States" }],
+      metricValues: [{ value: "12" }]
+    }],
+    rowCount: 1
+  };
+  const fetchImpl = async (url, options) => {
+    captured = { url, options };
+    return jsonResponse(raw);
+  };
+
+  const report = await runReport({
+    propertyId: "100",
+    request,
+    token: "secret",
+    fetchImpl
+  });
+
+  assert.equal(
+    captured.url,
+    "https://analyticsdata.googleapis.com/v1beta/properties/100:runReport"
+  );
+  assert.equal(captured.options.method, "POST");
+  assert.deepEqual(JSON.parse(captured.options.body), request);
+  assert.deepEqual(report, {
+    headers: ["country", "activeUsers"],
+    rows: [["United States", "12"]],
+    rowCount: 1,
+    raw
+  });
+});
+
+test("runReport preserves an empty result as a non-error", async () => {
+  const fetchImpl = async () => jsonResponse({
+    dimensionHeaders: [{ name: "country" }],
+    metricHeaders: [{ name: "activeUsers" }],
+    rowCount: 0
+  });
+
+  const report = await runReport({
+    propertyId: "100",
+    request: {},
+    token: "secret",
+    fetchImpl
+  });
+
+  assert.deepEqual(report.rows, []);
+  assert.equal(report.rowCount, 0);
 });

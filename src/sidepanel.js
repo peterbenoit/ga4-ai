@@ -1,14 +1,52 @@
 import { getGoogleAccessToken } from "./auth.js";
 import { createAuthController } from "./auth-controller.js";
-import { fetchPropertyMetadata, listAccessibleProperties } from "./ga4-client.js";
+import {
+  fetchPropertyMetadata,
+  listAccessibleProperties,
+  runReport
+} from "./ga4-client.js";
 import { createPropertyController } from "./property-controller.js";
 import { createPropertyStore } from "./property-store.js";
 import { createQueryController } from "./query-controller.js";
 import { createSettingsStore } from "./settings-store.js";
 import { translateQuestion } from "./translator.js";
 
+let googleToken = "";
+
+function renderReport(report) {
+  const table = document.querySelector("#report-table");
+  const caption = document.createElement("caption");
+  caption.textContent = "GA4 report data";
+  const head = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+
+  for (const header of report.headers) {
+    const cell = document.createElement("th");
+    cell.scope = "col";
+    cell.textContent = header;
+    headerRow.append(cell);
+  }
+  head.append(headerRow);
+
+  const body = document.createElement("tbody");
+  for (const row of report.rows) {
+    const tableRow = document.createElement("tr");
+    for (const value of row) {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      tableRow.append(cell);
+    }
+    body.append(tableRow);
+  }
+
+  table.replaceChildren(caption, head, body);
+  table.hidden = false;
+}
+
 const queryController = createQueryController({
   translate: translateQuestion,
+  runReport,
+  renderReport,
   store: createSettingsStore(),
   form: document.querySelector("#question-form"),
   input: document.querySelector("#question"),
@@ -34,8 +72,12 @@ const propertyController = createPropertyController({
     option.textContent = `${property.name} — ${property.accountName}`;
     return option;
   },
-  onMetadataReady({ metadata }) {
-    queryController.setMetadata(metadata);
+  onMetadataReady({ propertyId, metadata }) {
+    queryController.setContext({
+      propertyId,
+      metadata,
+      token: googleToken
+    });
   }
 });
 
@@ -44,6 +86,7 @@ const controller = createAuthController({
   status: document.querySelector("#auth-status"),
   button: document.querySelector("#connect-google"),
   onConnected(token) {
+    googleToken = token;
     return propertyController.initialize(token);
   }
 });

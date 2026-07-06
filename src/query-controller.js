@@ -15,6 +15,10 @@ export function todayInTimeZone(date, timeZone) {
 
 export function createQueryController({
   translate,
+  runReport = async () => {
+    throw new Error("GA4 report execution is unavailable.");
+  },
+  renderReport = () => {},
   store,
   form,
   input,
@@ -26,6 +30,8 @@ export function createQueryController({
   now = () => new Date()
 }) {
   let metadata = null;
+  let propertyId = "";
+  let token = "";
 
   settingsButton.addEventListener("click", () => openOptions());
   form.addEventListener("submit", async (event) => {
@@ -66,8 +72,17 @@ export function createQueryController({
         status.textContent = "Clarification needed.";
         output.textContent = result.question;
       } else {
-        status.textContent = "GA4 request ready.";
         output.textContent = JSON.stringify(result.request, null, 2);
+        status.textContent = "Running GA4 report…";
+        const report = await runReport({
+          propertyId,
+          request: result.request,
+          token
+        });
+        renderReport(report);
+        status.textContent = report.rowCount === 0
+          ? "No data matches this request."
+          : `Report returned ${report.rowCount} ${report.rowCount === 1 ? "row" : "rows"}.`;
       }
     } catch (error) {
       status.textContent = errorMessage(error);
@@ -77,8 +92,8 @@ export function createQueryController({
   });
 
   return {
-    setMetadata(value) {
-      metadata = value;
+    setContext(value) {
+      ({ metadata, propertyId, token } = value);
       input.disabled = false;
       submitButton.disabled = false;
     }

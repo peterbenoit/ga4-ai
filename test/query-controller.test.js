@@ -56,7 +56,7 @@ test("missing API key surfaces settings action without calling Claude", async ()
     },
     openOptions() {}
   });
-  controller.setMetadata(metadata);
+  controller.setContext({ metadata, propertyId: "100", token: "google-token" });
   elements.input.value = "Users by country";
 
   await elements.form.submit();
@@ -76,7 +76,7 @@ test("clarification outcome is shown as a follow-up question", async () => {
     },
     openOptions() {}
   });
-  controller.setMetadata(metadata);
+  controller.setContext({ metadata, propertyId: "100", token: "google-token" });
   elements.input.value = "Did my campaign work?";
 
   await elements.form.submit();
@@ -93,6 +93,14 @@ test("valid translation displays the exact GA4 request", async () => {
     metrics: [{ name: "activeUsers" }],
     dateRanges: [{ startDate: "2026-07-01", endDate: "2026-07-06" }]
   };
+  const report = {
+    headers: ["activeUsers"],
+    rows: [["12"]],
+    rowCount: 1,
+    raw: {}
+  };
+  const reportCalls = [];
+  const renderedReports = [];
   const controller = createQueryController({
     ...elements,
     store: { async getAnthropicApiKey() { return "key"; } },
@@ -100,18 +108,57 @@ test("valid translation displays the exact GA4 request", async () => {
       options = value;
       return { type: "query", request };
     },
+    async runReport(value) {
+      reportCalls.push(value);
+      return report;
+    },
+    renderReport(value) {
+      renderedReports.push(value);
+    },
     now: () => new Date("2026-07-07T02:30:00Z"),
     openOptions() {}
   });
-  controller.setMetadata(metadata);
+  controller.setContext({ metadata, propertyId: "100", token: "google-token" });
   elements.input.value = "Active users this month";
 
   await elements.form.submit();
 
   assert.equal(options.today, "2026-07-06");
   assert.equal(options.apiKey, "key");
-  assert.equal(elements.status.textContent, "GA4 request ready.");
+  assert.deepEqual(reportCalls, [{
+    propertyId: "100",
+    request,
+    token: "google-token"
+  }]);
+  assert.deepEqual(renderedReports, [report]);
+  assert.equal(elements.status.textContent, "Report returned 1 row.");
   assert.equal(elements.output.textContent, JSON.stringify(request, null, 2));
+});
+
+test("empty report is a distinct successful outcome", async () => {
+  const elements = createElements();
+  const renderedReports = [];
+  const controller = createQueryController({
+    ...elements,
+    store: { async getAnthropicApiKey() { return "key"; } },
+    async translate() {
+      return { type: "query", request: { metrics: [{ name: "activeUsers" }] } };
+    },
+    async runReport() {
+      return { headers: ["activeUsers"], rows: [], rowCount: 0, raw: {} };
+    },
+    renderReport(value) {
+      renderedReports.push(value);
+    },
+    openOptions() {}
+  });
+  controller.setContext({ metadata, propertyId: "100", token: "google-token" });
+  elements.input.value = "Users from Mars";
+
+  await elements.form.submit();
+
+  assert.equal(elements.status.textContent, "No data matches this request.");
+  assert.equal(renderedReports[0].rowCount, 0);
 });
 
 test("translation failures remain visible", async () => {
@@ -124,7 +171,7 @@ test("translation failures remain visible", async () => {
     },
     openOptions() {}
   });
-  controller.setMetadata(metadata);
+  controller.setContext({ metadata, propertyId: "100", token: "google-token" });
   elements.input.value = "Users";
 
   await elements.form.submit();

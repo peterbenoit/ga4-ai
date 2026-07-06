@@ -1,18 +1,28 @@
 const ADMIN_API = "https://analyticsadmin.googleapis.com/v1beta";
 const DATA_API = "https://analyticsdata.googleapis.com/v1beta";
 
-async function fetchJson(url, { token, fetchImpl }) {
+async function fetchJson(url, {
+  token,
+  fetchImpl,
+  method = "GET",
+  body
+}) {
   const response = await fetchImpl(url, {
-    headers: { Authorization: `Bearer ${token}` }
+    method,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(body ? { "content-type": "application/json" } : {})
+    },
+    ...(body ? { body: JSON.stringify(body) } : {})
   });
-  const body = await response.json();
+  const data = await response.json();
 
   if (!response.ok) {
-    const message = body?.error?.message ?? "Unknown error";
+    const message = data?.error?.message ?? "Unknown error";
     throw new Error(`GA4 API error (${response.status}): ${message}`);
   }
 
-  return body;
+  return data;
 }
 
 export async function listAccessibleProperties({
@@ -63,5 +73,32 @@ export async function fetchPropertyMetadata({
     metrics: metadata.metrics ?? [],
     timeZone: property.timeZone,
     fetchedAt: now()
+  };
+}
+
+export async function runReport({
+  propertyId,
+  request,
+  token,
+  fetchImpl = globalThis.fetch
+}) {
+  const raw = await fetchJson(
+    `${DATA_API}/properties/${propertyId}:runReport`,
+    { token, fetchImpl, method: "POST", body: request }
+  );
+  const headers = [
+    ...(raw.dimensionHeaders ?? []).map(({ name }) => name),
+    ...(raw.metricHeaders ?? []).map(({ name }) => name)
+  ];
+  const rows = (raw.rows ?? []).map((row) => [
+    ...(row.dimensionValues ?? []).map(({ value }) => value),
+    ...(row.metricValues ?? []).map(({ value }) => value)
+  ]);
+
+  return {
+    headers,
+    rows,
+    rowCount: raw.rowCount ?? rows.length,
+    raw
   };
 }
