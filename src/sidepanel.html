@@ -10,9 +10,13 @@
   <body>
     <main>
       <p class="eyebrow">GA4 Query Assistant</p>
-      <h1>Project setup complete</h1>
-      <p>The query workflow will be added in the next phases.</p>
-      <p id="status" role="status">Loading extension shell…</p>
+      <h1>Connect Google Analytics</h1>
+      <p>Authorize read-only access to the GA4 properties available to your Google account.</p>
+      <section class="auth-panel" aria-labelledby="auth-heading">
+        <h2 id="auth-heading">Google Analytics connection</h2>
+        <p id="auth-status" role="status">Checking Google Analytics connection…</p>
+        <button id="connect-google" type="button" hidden>Connect Google Analytics</button>
+      </section>
     </main>
   </body>
 </html>

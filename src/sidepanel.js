@@ -1,3 +1,10 @@
-const status = document.querySelector("#status");
+import { getGoogleAccessToken } from "./auth.js";
+import { createAuthController } from "./auth-controller.js";
 
-status.textContent = "Extension shell ready.";
+const controller = createAuthController({
+  getAccessToken: getGoogleAccessToken,
+  status: document.querySelector("#auth-status"),
+  button: document.querySelector("#connect-google")
+});
+
+void controller.check();

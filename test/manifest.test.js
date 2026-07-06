@@ -23,7 +23,7 @@ test("manifest declares the Phase 0 MV3 package contract", async () => {
     "https://api.anthropic.com/*"
   ]);
   assert.deepEqual(manifest.oauth2, {
-    client_id: "442168594815-0rj9rl8i7m3tn4e1ibuckiv2vt8sf41r.apps.googleusercontent.com",
+    client_id: "156681170189-1hmgo0ob70iblo6agil20hml97u5t06b.apps.googleusercontent.com",
     scopes: ["https://www.googleapis.com/auth/analytics.readonly"]
   });
   assert.equal("content_scripts" in manifest, false);

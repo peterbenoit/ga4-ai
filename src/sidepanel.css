@@ -24,3 +24,29 @@ h1 {
   font-size: 1.5rem;
   line-height: 1.2;
 }
+
+h2 {
+  font-size: 1rem;
+}
+
+.auth-panel {
+  border-block-start: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  margin-block-start: 1.5rem;
+  padding-block-start: 1rem;
+}
+
+button {
+  background: #1a73e8;
+  border: 0;
+  border-radius: 0.25rem;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
