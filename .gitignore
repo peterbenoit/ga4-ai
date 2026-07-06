@@ -8,3 +8,4 @@ local-config.*
 secrets.*
 .superpowers/
 .vscode/*
+.claude/*

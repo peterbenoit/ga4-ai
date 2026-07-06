@@ -9,9 +9,15 @@ import { createPropertyController } from "./property-controller.js";
 import { createPropertyStore } from "./property-store.js";
 import { createQueryController } from "./query-controller.js";
 import { createSettingsStore } from "./settings-store.js";
+import { initTabs } from "./tabs.js";
 import { translateQuestion } from "./translator.js";
 
 let googleToken = "";
+
+initTabs({
+  tabButtons: Array.from(document.querySelectorAll(".tab")),
+  panels: Array.from(document.querySelectorAll(".tabpanel"))
+});
 
 function renderReport(report) {
   const table = document.querySelector("#report-table");
