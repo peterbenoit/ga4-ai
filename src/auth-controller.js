@@ -1,4 +1,9 @@
-export function createAuthController({ getAccessToken, status, button }) {
+export function createAuthController({
+  getAccessToken,
+  status,
+  button,
+  onConnected = async () => {}
+}) {
   async function authenticate(interactive) {
     status.textContent = interactive
       ? "Connecting to Google Analytics…"
@@ -7,8 +12,9 @@ export function createAuthController({ getAccessToken, status, button }) {
     button.disabled = true;
 
     try {
-      await getAccessToken({ interactive });
+      const token = await getAccessToken({ interactive });
       status.textContent = "Connected to Google Analytics.";
+      await onConnected(token);
       return true;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

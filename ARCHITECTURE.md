@@ -15,6 +15,7 @@ This is scoped for one person, one Google identity, running locally. It is not a
 
 **In scope:**
 - Natural-language question in, plain-language answer out
+- Google Analytics Admin API access (`accountSummaries.list`, `properties.get`) for property discovery and reporting timezone
 - GA4 Data API access (`runReport`, `properties.getMetadata`)
 - Property picker across the GA4 properties Pete has access to
 - Two-stage LLM pipeline: question → structured GA4 request → results → answer, with the answer framed as a comparison/trend where the data supports it, not just a bare number
@@ -56,7 +57,9 @@ This is scoped for one person, one Google identity, running locally. It is not a
                │
                ▼
 ┌─────────────────────────────┐
-│  GA4 Data API client           │
+│  Google Analytics API client   │
+│  - accountSummaries.list       │
+│  - properties.get              │
 │  - properties.getMetadata      │
 │  - runReport                    │
 │  (uses cached OAuth token)      │
@@ -125,7 +128,7 @@ This is scoped for one person, one Google identity, running locally. It is not a
 ## Date & Timezone Resolution
 
 - Today's actual date is always passed into the translator prompt explicitly — never inferred by the model.
-- Relative phrases ("last month," "this quarter," "between these dates") are resolved against the GA4 property's configured reporting timezone, not the browser's local timezone. Property timezone is available via `properties.getMetadata` (or `properties.get`) and should be fetched/cached alongside the dimension/metric list.
+- Relative phrases ("last month," "this quarter," "between these dates") are resolved against the GA4 property's configured reporting timezone, not the browser's local timezone. Property timezone comes from the Admin API's `properties.get` response and is fetched/cached alongside the Data API dimension/metric list.
 
 ## Service Worker Lifecycle
 
@@ -170,7 +173,7 @@ This is scoped for one person, one Google identity, running locally. It is not a
 - `identity` — for OAuth
 - `sidePanel` — for the persistent extension UI and pipeline context
 - `storage` — for local key/cache storage
-- Host permissions for `analyticsdata.googleapis.com` and `api.anthropic.com`
+- Host permissions for `analyticsadmin.googleapis.com`, `analyticsdata.googleapis.com`, and `api.anthropic.com`
 - No `activeTab`, no content scripts, no broad host permissions — this doesn't touch web pages
 
 ## Error Handling Considerations

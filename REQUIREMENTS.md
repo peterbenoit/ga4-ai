@@ -19,13 +19,14 @@ Single source of truth for what v1 does and doesn't include. See `ARCHITECTURE.m
 
 ## Phase 1 — Auth
 
-- [ ] `chrome.identity.getAuthToken` wired up, interactive on first use
-- [ ] Silent token refresh path works without re-prompting
-- [ ] Token failure state is visible in the UI, not silent
+- [x] `chrome.identity.getAuthToken` wired up, interactive on first use
+- [x] Silent token refresh path works without re-prompting
+- [x] Token failure state is visible in the UI, not silent
 - [ ] Verified: works after browser restart without re-auth
 
 ## Phase 2 — GA4 Metadata & Property Picker
 
+- [ ] Google Analytics Admin API enabled in the Google Cloud project
 - [ ] `properties.getMetadata` call implemented and returns real dimensions/metrics
 - [ ] List of accessible GA4 properties fetched and shown in a picker
 - [ ] Last-used property persisted and defaulted on next open

@@ -19,6 +19,7 @@ test("manifest declares the Phase 0 MV3 package contract", async () => {
   assert.equal(manifest.action.default_title, "Open GA4 Query Assistant");
   assert.deepEqual([...manifest.permissions].sort(), ["identity", "sidePanel", "storage"]);
   assert.deepEqual([...manifest.host_permissions].sort(), [
+    "https://analyticsadmin.googleapis.com/*",
     "https://analyticsdata.googleapis.com/*",
     "https://api.anthropic.com/*"
   ]);

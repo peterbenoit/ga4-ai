@@ -17,6 +17,15 @@
         <p id="auth-status" role="status">Checking Google Analytics connection…</p>
         <button id="connect-google" type="button" hidden>Connect Google Analytics</button>
       </section>
+      <section class="property-panel" aria-labelledby="property-heading">
+        <h2 id="property-heading">GA4 property</h2>
+        <label for="property-select">Property</label>
+        <select id="property-select" disabled>
+          <option>Connect Google Analytics to load properties</option>
+        </select>
+        <p id="metadata-status" role="status">Property metadata has not been loaded.</p>
+        <button id="refresh-metadata" type="button" hidden>Refresh metadata</button>
+      </section>
     </main>
   </body>
 </html>

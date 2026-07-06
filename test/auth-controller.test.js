@@ -77,3 +77,21 @@ test("connect button uses interactive authentication", async () => {
   assert.equal(elements.status.textContent, "Connected to Google Analytics.");
   assert.equal(elements.button.hidden, true);
 });
+
+test("successful authentication passes the token to the connected handler", async () => {
+  const elements = createElements();
+  const tokens = [];
+  const controller = createAuthController({
+    ...elements,
+    async getAccessToken() {
+      return "token-value";
+    },
+    async onConnected(token) {
+      tokens.push(token);
+    }
+  });
+
+  await controller.check();
+
+  assert.deepEqual(tokens, ["token-value"]);
+});
