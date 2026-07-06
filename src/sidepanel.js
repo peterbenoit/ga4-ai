@@ -70,9 +70,14 @@ const propertyChip = document.querySelector("#toolbar-property-chip");
 
 function updatePropertyChip() {
   const selectedOption = propertySelect.selectedOptions[0];
-  propertyChip.textContent = selectedOption && !selectedOption.disabled
-    ? `Property: ${selectedOption.textContent}`
-    : "Property: none selected";
+  if (!selectedOption || selectedOption.disabled) {
+    propertyChip.textContent = "Property: none selected";
+    return;
+  }
+
+  const [propertyName] = selectedOption.textContent.split(" — ");
+  propertyChip.textContent = `Property: ${propertyName}`;
+  propertyChip.title = selectedOption.textContent;
 }
 
 propertySelect.addEventListener("change", updatePropertyChip);
