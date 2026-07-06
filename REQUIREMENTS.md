@@ -91,7 +91,7 @@ Single source of truth for what v1 does and doesn't include. See `ARCHITECTURE.m
 
 - [ ] Unit tests for request validation logic (invalid dimension/metric rejected)
 - [ ] Unit tests for the metadata caching logic
-- [ ] Manual test: at least 5 real questions run end-to-end and answers checked against GA4 UI directly
+- [ ] Manual test: at least 5 real questions run end-to-end and answers checked against GA4 UI directly — pull from `GA4_Question_Reference/` (real VA-customer questions mapped to the GA4 reports/dimensions/metrics that answer them); include at least one row from its "Unanswerable by GA4" category to confirm the translator clarifies/fails visibly instead of guessing
 - [ ] Manual test: revoke OAuth access, confirm re-auth flow works cleanly
 - [ ] Manual test: exported CSV opens cleanly in Excel/Sheets, exported PDF is legible, exported chart image isn't cut off or blank
 

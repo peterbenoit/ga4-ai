@@ -6,6 +6,10 @@ Instructions for any agent (Claude Code or otherwise) working on this project.
 
 A single-user Chrome extension. Pete types a GA4 question in plain language, the extension turns it into a GA4 Data API request, runs it, and gives back a plain-language answer. Nothing more. See `ARCHITECTURE.md` and `REQUIREMENTS.md` — those two files are the source of truth, in that order. If a task isn't in `REQUIREMENTS.md`, don't build it; flag it and ask instead of assuming it's wanted.
 
+Supporting docs, all subordinate to the two above:
+- `GA4_Question_Reference/` — real VA-customer questions mapped to the GA4 report/dimensions/metrics that answer them, plus a category GA4 categorically can't answer. Source of the Phase 8 manual test bank; also useful context when tuning the translator's system prompt.
+- `BACKLOG.md` — ideas and known gaps explicitly deferred out of v1. Don't build from it without moving an item into `REQUIREMENTS.md` and confirming scope first.
+
 ## Ground rules
 
 - **Scope discipline.** This is explicitly single-user, no backend, no GTM, no multi-tenant anything. If a change would require any of those, stop and ask before proceeding — don't quietly lay groundwork for a bigger version.
