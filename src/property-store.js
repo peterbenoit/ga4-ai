@@ -28,6 +28,21 @@ export function createPropertyStore({
           [propertyId]: metadata
         }
       });
+    },
+
+    async getEventDictionary(propertyId) {
+      const result = await storage.get("propertyEventDictionaries");
+      return result.propertyEventDictionaries?.[propertyId] ?? "";
+    },
+
+    async setEventDictionary(propertyId, text) {
+      const result = await storage.get("propertyEventDictionaries");
+      await storage.set({
+        propertyEventDictionaries: {
+          ...(result.propertyEventDictionaries ?? {}),
+          [propertyId]: text
+        }
+      });
     }
   };
 }

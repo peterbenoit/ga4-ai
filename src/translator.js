@@ -2,10 +2,13 @@ import { callClaude } from "./anthropic-client.js";
 import { TRANSLATOR_MODEL } from "./config.js";
 import { validateReportRequest } from "./request-validator.js";
 
-function buildSystemPrompt({ metadata, today, dateRange }) {
+function buildSystemPrompt({ metadata, today, dateRange, eventDictionary }) {
   const dateInstruction = dateRange
     ? `A date range has already been chosen in the UI: ${dateRange.startDate} to ${dateRange.endDate}. Always use exactly this as the first entry in dateRanges — never infer or ask about dates. If the question explicitly asks to compare against another period (e.g. "vs last year"), add a second dateRanges entry for that comparison period computed relative to the chosen range, and leave dimensions empty per the comparison rule below.`
     : `Resolve relative dates against the property timezone.`;
+  const eventDictionaryInstruction = eventDictionary
+    ? `\nThis property's actual event names, key events, and GTM-defined parameters are listed below. When the question refers to an event or conversion, use these exact names instead of guessing a generic GA4 event name.\n${eventDictionary}`
+    : "";
 
   return `You translate plain-language analytics questions into Google Analytics Data API runReport requests.
 
@@ -23,7 +26,7 @@ ${dateInstruction}
 Today: ${today}
 Property timezone: ${metadata.timeZone}
 Dimensions: ${JSON.stringify(metadata.dimensions)}
-Metrics: ${JSON.stringify(metadata.metrics)}`;
+Metrics: ${JSON.stringify(metadata.metrics)}${eventDictionaryInstruction}`;
 }
 
 function isEmptyFilterExpression(expression) {
@@ -79,10 +82,11 @@ export async function translateQuestion({
   metadata,
   today,
   dateRange = null,
+  eventDictionary = "",
   apiKey,
   call = callClaude
 }) {
-  const system = buildSystemPrompt({ metadata, today, dateRange });
+  const system = buildSystemPrompt({ metadata, today, dateRange, eventDictionary });
   let user = question;
   let lastInspection;
 

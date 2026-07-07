@@ -48,3 +48,25 @@ test("missing metadata cache returns null", async () => {
 
   assert.equal(await store.getCachedMetadata("100"), null);
 });
+
+test("event dictionary is empty by default", async () => {
+  const store = createPropertyStore({ storage: createStorage() });
+
+  assert.equal(await store.getEventDictionary("100"), "");
+});
+
+test("event dictionary preserves entries for other properties", async () => {
+  const storage = createStorage({
+    propertyEventDictionaries: { "100": "existing dictionary" }
+  });
+  const store = createPropertyStore({ storage });
+
+  await store.setEventDictionary("200", "new dictionary");
+
+  assert.equal(await store.getEventDictionary("100"), "existing dictionary");
+  assert.equal(await store.getEventDictionary("200"), "new dictionary");
+  assert.deepEqual(storage.state.propertyEventDictionaries, {
+    "100": "existing dictionary",
+    "200": "new dictionary"
+  });
+});

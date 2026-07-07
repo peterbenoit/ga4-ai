@@ -307,10 +307,12 @@ function updatePropertyChip() {
 
 propertySelect.addEventListener("change", updatePropertyChip);
 
+const propertyStore = createPropertyStore();
+
 const propertyController = createPropertyController({
   listProperties: listAccessiblePropertiesWithRetry,
   fetchMetadata: fetchPropertyMetadataWithRetry,
-  store: createPropertyStore(),
+  store: propertyStore,
   select: propertySelect,
   refreshButton: document.querySelector("#refresh-metadata"),
   status: document.querySelector("#metadata-status"),
@@ -320,14 +322,16 @@ const propertyController = createPropertyController({
     option.textContent = `${property.name} — ${property.accountName}`;
     return option;
   },
-  onMetadataReady({ propertyId, metadata }) {
+  async onMetadataReady({ propertyId, metadata }) {
     currentPropertyId = propertyId;
     currentMetadata = metadata;
     updatePropertyChip();
+    const eventDictionary = await propertyStore.getEventDictionary(propertyId);
     queryController.setContext({
       propertyId,
       metadata,
-      token: googleToken
+      token: googleToken,
+      eventDictionary
     });
   }
 });

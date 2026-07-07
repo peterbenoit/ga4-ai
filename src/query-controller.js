@@ -40,6 +40,7 @@ export function createQueryController({
   let metadata = null;
   let propertyId = "";
   let token = "";
+  let eventDictionary = "";
 
   settingsButton.addEventListener("click", () => openOptions());
   form.addEventListener("submit", async (event) => {
@@ -75,6 +76,7 @@ export function createQueryController({
         metadata,
         today: todayInTimeZone(now(), metadata.timeZone),
         dateRange: getDateRange(),
+        eventDictionary,
         apiKey
       });
 
@@ -118,7 +120,7 @@ export function createQueryController({
 
   return {
     setContext(value) {
-      ({ metadata, propertyId, token } = value);
+      ({ metadata, propertyId, token, eventDictionary = "" } = value);
       input.disabled = false;
       submitButton.disabled = false;
     },

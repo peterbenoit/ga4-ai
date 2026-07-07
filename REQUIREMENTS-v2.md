@@ -2,7 +2,7 @@
 
 Driven by evaluating mvp.va.gov/pwa as the first real reporting target.
 
-- [ ] MVP-1: Property event dictionary. Injectable per-property context file
+- [x] MVP-1: Property event dictionary. Injectable per-property context file
       (event names, key events, GTM-defined params) added to the translator
       prompt so NL questions map to this site's actual event taxonomy
       instead of guessed names. Manual JSON/MD file per property is fine.

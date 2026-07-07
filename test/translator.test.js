@@ -58,6 +58,43 @@ test("translator is told not to add a hostname filter for the property's own dom
   assert.match(calls[0].system, /hostName/);
 });
 
+test("translator includes the property's event dictionary when provided", async () => {
+  const calls = [];
+  const call = async (options) => {
+    calls.push(options);
+    return JSON.stringify({ type: "query", request: validRequest });
+  };
+
+  await translateQuestion({
+    question: "How many join clicks were there last month?",
+    metadata,
+    today: "2026-07-06",
+    eventDictionary: "- join_click: click on the Join MVP button (GTM-M5WC82N)",
+    apiKey: "key",
+    call
+  });
+
+  assert.match(calls[0].system, /join_click: click on the Join MVP button/);
+});
+
+test("translator omits the event dictionary section when none is provided", async () => {
+  const calls = [];
+  const call = async (options) => {
+    calls.push(options);
+    return JSON.stringify({ type: "query", request: validRequest });
+  };
+
+  await translateQuestion({
+    question: "Users by country last month",
+    metadata,
+    today: "2026-07-06",
+    apiKey: "key",
+    call
+  });
+
+  assert.doesNotMatch(calls[0].system, /event names, key events, and GTM-defined params/);
+});
+
 test("an explicit UI-selected date range is passed through and Claude is told not to infer dates", async () => {
   const calls = [];
   const request = {

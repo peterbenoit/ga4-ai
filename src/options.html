@@ -18,6 +18,17 @@
         <button id="save-key" type="submit">Save API key</button>
       </form>
       <p id="options-status" role="status">Checking API key…</p>
+
+      <form id="event-dictionary-form">
+        <label for="event-dictionary-property-id">GA4 property ID</label>
+        <input id="event-dictionary-property-id" type="text" autocomplete="off" placeholder="e.g. 123456789" required>
+        <label for="event-dictionary-text">Event dictionary (JSON or Markdown)</label>
+        <textarea id="event-dictionary-text" rows="10" placeholder="Event names, key events, and GTM-defined params for this property"></textarea>
+        <p>Loaded per property ID when its metadata loads in the side panel, and used to resolve event names in NL questions instead of guessing.</p>
+        <button id="load-event-dictionary" type="button">Load for this property</button>
+        <button id="save-event-dictionary" type="submit">Save event dictionary</button>
+      </form>
+      <p id="event-dictionary-status" role="status"></p>
     </main>
   </body>
 </html>

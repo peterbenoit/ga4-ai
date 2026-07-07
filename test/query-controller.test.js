@@ -89,6 +89,31 @@ test("onQuestionStart fires before translation on every submit, even a clarifica
   assert.deepEqual(starts, [true]);
 });
 
+test("event dictionary set via setContext is forwarded to translate", async () => {
+  const elements = createElements();
+  const calls = [];
+  const controller = createQueryController({
+    ...elements,
+    store: { async getAnthropicApiKey() { return "key"; } },
+    async translate(options) {
+      calls.push(options);
+      return { type: "clarification", question: "Which event?" };
+    },
+    openOptions() {}
+  });
+  controller.setContext({
+    metadata,
+    propertyId: "100",
+    token: "google-token",
+    eventDictionary: "- join_click: Join MVP button"
+  });
+  elements.input.value = "How many join clicks?";
+
+  await elements.form.submit();
+
+  assert.equal(calls[0].eventDictionary, "- join_click: Join MVP button");
+});
+
 test("clarification outcome is shown as a follow-up question", async () => {
   const elements = createElements();
   const controller = createQueryController({
