@@ -250,7 +250,7 @@ async function runPreset(preset) {
   if (preset.kind === "funnel") {
     const pendingStep = preset.steps.find((step) => step.pending);
     if (pendingStep) {
-      presetStatus.textContent = `"${preset.label}" needs the "${pendingStep.label}" step configured before it can run — see REQUIREMENTS-v2.md MVP-2.`;
+      presetStatus.textContent = `"${preset.label}" isn't ready yet: the "${pendingStep.label}" step needs a real GA4 event name filled in. Ask a dev to check GTM/GA4 for the exact event that fires on that click, then it'll work.`;
       return;
     }
   }
@@ -329,6 +329,19 @@ function updatePropertyChip() {
 propertySelect.addEventListener("change", updatePropertyChip);
 
 const propertyStore = createPropertyStore();
+const statDimensions = document.querySelector("#stat-dimensions");
+const statMetrics = document.querySelector("#stat-metrics");
+const kvTimezone = document.querySelector("#kv-timezone");
+const kvFetchedAt = document.querySelector("#kv-fetched-at");
+
+function renderPropertyMetadataStats(metadata) {
+  statDimensions.textContent = String(metadata.dimensions.length);
+  statMetrics.textContent = String(metadata.metrics.length);
+  kvTimezone.textContent = metadata.timeZone;
+  kvFetchedAt.textContent = metadata.fetchedAt
+    ? new Date(metadata.fetchedAt).toLocaleString()
+    : "—";
+}
 
 const propertyController = createPropertyController({
   listProperties: listAccessiblePropertiesWithRetry,
@@ -347,6 +360,7 @@ const propertyController = createPropertyController({
     currentPropertyId = propertyId;
     currentMetadata = metadata;
     updatePropertyChip();
+    renderPropertyMetadataStats(metadata);
     const eventDictionary = await propertyStore.getEventDictionary(propertyId);
     queryController.setContext({
       propertyId,
