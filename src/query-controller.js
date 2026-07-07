@@ -32,6 +32,7 @@ export function createQueryController({
   answer,
   openOptions,
   getDateRange = () => null,
+  onResultReady = () => {},
   now = () => new Date()
 }) {
   let metadata = null;
@@ -93,8 +94,10 @@ export function createQueryController({
         } else {
           status.textContent = "Composing answer…";
           try {
-            answer.textContent = await compose({ question, report, request: result.request, apiKey });
+            const composedAnswer = await compose({ question, report, request: result.request, apiKey });
+            answer.textContent = composedAnswer;
             answer.hidden = false;
+            onResultReady({ question, answer: composedAnswer, report, request: result.request });
           } catch (composeError) {
             status.textContent = errorMessage(composeError);
             return;

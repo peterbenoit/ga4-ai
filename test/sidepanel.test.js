@@ -50,6 +50,7 @@ test("side panel exposes question translation controls and output", async () => 
   assert.match(html, /id="report-chart"[^>]*hidden/);
   assert.match(html, /id="export-csv"[^>]*disabled/);
   assert.match(html, /id="export-chart"[^>]*disabled/);
+  assert.match(html, /id="export-pdf"[^>]*disabled/);
 });
 
 test("side panel wires metadata into the query controller", async () => {
@@ -62,5 +63,6 @@ test("side panel wires metadata into the query controller", async () => {
   assert.match(script, /renderReport/);
   assert.match(script, /downloadCsv/);
   assert.match(script, /downloadChartImage/);
+  assert.match(script, /downloadPdfSummary/);
   assert.match(script, /openOptionsPage/);
 });

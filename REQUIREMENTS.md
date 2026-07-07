@@ -70,7 +70,7 @@ Single source of truth for what v1 does and doesn't include. See `ARCHITECTURE.m
 - [x] Every chart has its data table available alongside it — never chart-only
 - [x] CSV export of the raw data table
 - [x] Chart image export (PNG via Chart.js's `toBase64Image()`)
-- [ ] One-page PDF export combining the question, the answer, the chart (reusing the same PNG), and the data table
+- [x] One-page PDF export combining the question, the answer, the chart (reusing the same PNG), and the data table
 - [ ] Named/saved report definitions: save a question (with its dimensions/metrics/filters) for re-running later
 - [ ] Saved reports can be re-run with a fresh date range without retyping the original question
 - [ ] Saved report list visible and manageable (rename, delete) in the UI

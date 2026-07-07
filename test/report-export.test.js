@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildCsv, downloadChartImage, downloadCsv } from "../src/report-export.js";
+import {
+  buildCsv,
+  downloadChartImage,
+  downloadCsv,
+  downloadPdfSummary
+} from "../src/report-export.js";
 
 test("buildCsv exports headers and rows with CSV escaping", () => {
   const csv = buildCsv({
@@ -97,4 +102,63 @@ test("downloadChartImage saves the chart PNG data URL", () => {
   assert.equal(anchors[0].href, "data:image/png;base64,abc123");
   assert.equal(anchors[0].download, "ga4-chart.png");
   assert.deepEqual(clicked, ["ga4-chart.png"]);
+});
+
+test("downloadPdfSummary writes question, answer, chart image, and table rows", () => {
+  const calls = [];
+
+  class PdfStub {
+    constructor() {
+      calls.push(["construct"]);
+    }
+
+    setFontSize(size) {
+      calls.push(["setFontSize", size]);
+    }
+
+    text(value, x, y) {
+      calls.push(["text", value, x, y]);
+    }
+
+    splitTextToSize(value, width) {
+      calls.push(["splitTextToSize", value, width]);
+      return [value];
+    }
+
+    addImage(image, format, x, y, width, height) {
+      calls.push(["addImage", image, format, x, y, width, height]);
+    }
+
+    save(filename) {
+      calls.push(["save", filename]);
+    }
+  }
+
+  downloadPdfSummary({
+    question: "Which countries sent users?",
+    answer: "United States led with 120 active users.",
+    report: {
+      headers: ["country", "activeUsers"],
+      rows: [
+        ["United States", "120"],
+        ["Canada", "25"]
+      ]
+    },
+    chart: {
+      toBase64Image() {
+        return "data:image/png;base64,chart";
+      }
+    },
+    filename: "ga4-summary.pdf",
+    PdfCtor: PdfStub
+  });
+
+  assert.deepEqual(calls[0], ["construct"]);
+  assert.ok(calls.some((call) => call[0] === "text" && call[1] === "GA4 Report Summary"));
+  assert.ok(calls.some((call) => call[0] === "splitTextToSize" && call[1] === "Which countries sent users?"));
+  assert.ok(calls.some((call) => call[0] === "splitTextToSize" && call[1] === "United States led with 120 active users."));
+  assert.ok(calls.some((call) => call[0] === "addImage" && call[1] === "data:image/png;base64,chart" && call[2] === "PNG"));
+  assert.ok(calls.some((call) => call[0] === "text" && call[1] === "country | activeUsers"));
+  assert.ok(calls.some((call) => call[0] === "text" && call[1] === "United States | 120"));
+  assert.deepEqual(calls.at(-1), ["save", "ga4-summary.pdf"]);
 });

@@ -102,6 +102,7 @@ test("valid translation displays the exact GA4 request", async () => {
   };
   const reportCalls = [];
   const renderedReports = [];
+  const readyResults = [];
   const controller = createQueryController({
     ...elements,
     store: { async getAnthropicApiKey() { return "key"; } },
@@ -119,6 +120,9 @@ test("valid translation displays the exact GA4 request", async () => {
     async compose(value) {
       composeCalls.push(value);
       return "12 active users in the last 5 days.";
+    },
+    onResultReady(value) {
+      readyResults.push(value);
     },
     now: () => new Date("2026-07-07T02:30:00Z"),
     openOptions() {}
@@ -142,6 +146,12 @@ test("valid translation displays the exact GA4 request", async () => {
     report,
     request,
     apiKey: "key"
+  }]);
+  assert.deepEqual(readyResults, [{
+    question: "Active users this month",
+    answer: "12 active users in the last 5 days.",
+    report,
+    request
   }]);
   assert.equal(elements.answer.textContent, "12 active users in the last 5 days.");
   assert.equal(elements.answer.hidden, false);

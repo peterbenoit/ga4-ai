@@ -12,7 +12,7 @@ import {
 import { createPropertyController } from "./property-controller.js";
 import { createPropertyStore } from "./property-store.js";
 import { createQueryController } from "./query-controller.js";
-import { downloadChartImage, downloadCsv } from "./report-export.js";
+import { downloadChartImage, downloadCsv, downloadPdfSummary } from "./report-export.js";
 import { renderReport as renderReportView } from "./report-renderer.js";
 import { createSettingsStore } from "./settings-store.js";
 import { initTabs } from "./tabs.js";
@@ -36,8 +36,10 @@ initTabs({
 
 let currentChart = null;
 let currentReport = null;
+let currentSummary = null;
 const exportCsvButton = document.querySelector("#export-csv");
 const exportChartButton = document.querySelector("#export-chart");
+const exportPdfButton = document.querySelector("#export-pdf");
 
 function renderReport(report) {
   currentReport = report;
@@ -53,6 +55,7 @@ function renderReport(report) {
   });
   exportCsvButton.disabled = false;
   exportChartButton.disabled = !currentChart;
+  exportPdfButton.disabled = true;
 }
 
 exportCsvButton.addEventListener("click", () => {
@@ -74,6 +77,19 @@ exportChartButton.addEventListener("click", () => {
   downloadChartImage({
     chart: currentChart,
     filename: `ga4-chart-${new Date().toISOString().slice(0, 10)}.png`
+  });
+});
+
+exportPdfButton.addEventListener("click", () => {
+  if (!currentSummary) {
+    return;
+  }
+
+  downloadPdfSummary({
+    ...currentSummary,
+    chart: currentChart,
+    filename: `ga4-summary-${new Date().toISOString().slice(0, 10)}.pdf`,
+    PdfCtor: globalThis.jspdf.jsPDF
   });
 });
 
@@ -99,6 +115,10 @@ const queryController = createQueryController({
   output: document.querySelector("#translation-output"),
   answer: document.querySelector("#answer-output"),
   getDateRange: dateRangePicker.getRange,
+  onResultReady(summary) {
+    currentSummary = summary;
+    exportPdfButton.disabled = false;
+  },
   openOptions() {
     return chrome.runtime.openOptionsPage();
   }

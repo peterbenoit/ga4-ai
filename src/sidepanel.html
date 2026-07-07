@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="vendor/flatpickr/flatpickr.min.css">
     <link rel="stylesheet" href="sidepanel.css">
     <script src="vendor/chartjs/chart.umd.min.js"></script>
+    <script src="vendor/jspdf/jspdf.umd.min.js"></script>
     <script type="module" src="sidepanel.js"></script>
   </head>
   <body>
@@ -158,9 +159,8 @@
         <div class="export-row">
           <button class="btn btn--ghost btn--sm" id="export-csv" type="button" disabled>⬇ CSV</button>
           <button class="btn btn--ghost btn--sm" id="export-chart" type="button" disabled>⬇ Chart PNG</button>
-          <button class="btn btn--ghost btn--sm" type="button" disabled>⬇ PDF summary</button>
+          <button class="btn btn--ghost btn--sm" id="export-pdf" type="button" disabled>⬇ PDF summary</button>
         </div>
-        <p class="placeholder-note">PDF export ships later in Phase 6.</p>
       </section>
 
       <section class="tabpanel" id="panel-saved" data-tabpanel="saved" hidden role="tabpanel" aria-labelledby="tab-saved">
