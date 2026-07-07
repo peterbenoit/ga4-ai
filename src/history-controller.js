@@ -44,11 +44,20 @@ export function createHistoryController({
       question.className = "history-item__question";
       question.textContent = entry.question;
 
+      const children = [question];
+      if (entry.answer) {
+        const answer = documentRef.createElement("p");
+        answer.className = "history-item__answer";
+        answer.textContent = entry.answer;
+        children.push(answer);
+      }
+
       const meta = documentRef.createElement("p");
       meta.className = "history-item__meta";
       meta.textContent = formatTimestamp(entry.timestamp);
+      children.push(meta);
 
-      body.append(question, meta);
+      body.append(...children);
 
       const actions = documentRef.createElement("div");
       actions.className = "history-item__actions";

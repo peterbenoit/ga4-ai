@@ -65,6 +65,33 @@ test("history controller renders entries and can populate the Ask tab", async ()
   assert.deepEqual(selected, ["Users by country"]);
 });
 
+test("history controller renders saved answers when present", async () => {
+  const list = createElement();
+  const controller = createHistoryController({
+    store: {
+      async list() {
+        return [{
+          id: "1",
+          question: "Users by country",
+          answer: "The United States had the most active users.",
+          timestamp: Date.UTC(2026, 6, 7)
+        }];
+      }
+    },
+    list,
+    empty: createElement(),
+    clearButton: createElement("button"),
+    documentRef: createDocument()
+  });
+
+  await controller.initialize();
+
+  assert.equal(
+    list.children[0].children[0].children[1].textContent,
+    "The United States had the most active users."
+  );
+});
+
 test("history controller copies a question to the clipboard", async () => {
   const copied = [];
   const controller = createHistoryController({
