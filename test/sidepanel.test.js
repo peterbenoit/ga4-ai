@@ -51,6 +51,9 @@ test("side panel exposes question translation controls and output", async () => 
   assert.match(html, /id="export-csv"[^>]*disabled/);
   assert.match(html, /id="export-chart"[^>]*disabled/);
   assert.match(html, /id="export-pdf"[^>]*disabled/);
+  assert.match(html, /id="tab-history"/);
+  assert.match(html, /id="history-list"/);
+  assert.match(html, /id="clear-history"[^>]*disabled/);
 });
 
 test("side panel wires metadata into the query controller", async () => {
@@ -64,5 +67,9 @@ test("side panel wires metadata into the query controller", async () => {
   assert.match(script, /downloadCsv/);
   assert.match(script, /downloadChartImage/);
   assert.match(script, /downloadPdfSummary/);
+  assert.match(script, /createHistoryStore/);
+  assert.match(script, /createHistoryController/);
+  assert.match(script, /onQuestionReady/);
+  assert.match(script, /tabs\.select\("ask"\)/);
   assert.match(script, /openOptionsPage/);
 });

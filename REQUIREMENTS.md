@@ -71,6 +71,7 @@ Single source of truth for what v1 does and doesn't include. See `ARCHITECTURE.m
 - [x] CSV export of the raw data table
 - [x] Chart image export (PNG via Chart.js's `toBase64Image()`)
 - [x] One-page PDF export combining the question, the answer, the chart (reusing the same PNG), and the data table
+- [x] Local question history: record completed questions and allow use, copy, delete one, or clear all
 - [ ] Named/saved report definitions: save a question (with its dimensions/metrics/filters) for re-running later
 - [ ] Saved reports can be re-run with a fresh date range without retyping the original question
 - [ ] Saved report list visible and manageable (rename, delete) in the UI
@@ -85,6 +86,7 @@ Single source of truth for what v1 does and doesn't include. See `ARCHITECTURE.m
 - [ ] Loading state while translate → execute → compose pipeline runs
 - [ ] Toggle to view raw report table
 - [ ] Export buttons (CSV / chart image / PDF) visible on any result that has them available
+- [x] History panel: view previous questions, populate Ask tab, copy, delete one, clear all
 - [ ] Saved-reports panel: view, re-run, rename, delete
 
 ## Phase 8 — Testing

@@ -103,6 +103,7 @@ test("valid translation displays the exact GA4 request", async () => {
   const reportCalls = [];
   const renderedReports = [];
   const readyResults = [];
+  const readyQuestions = [];
   const controller = createQueryController({
     ...elements,
     store: { async getAnthropicApiKey() { return "key"; } },
@@ -123,6 +124,9 @@ test("valid translation displays the exact GA4 request", async () => {
     },
     onResultReady(value) {
       readyResults.push(value);
+    },
+    onQuestionReady(value) {
+      readyQuestions.push(value);
     },
     now: () => new Date("2026-07-07T02:30:00Z"),
     openOptions() {}
@@ -153,10 +157,36 @@ test("valid translation displays the exact GA4 request", async () => {
     report,
     request
   }]);
+  assert.deepEqual(readyQuestions, [{
+    question: "Active users this month",
+    request,
+    answer: "12 active users in the last 5 days."
+  }]);
   assert.equal(elements.answer.textContent, "12 active users in the last 5 days.");
   assert.equal(elements.answer.hidden, false);
   assert.equal(elements.status.textContent, "Report returned 1 row.");
   assert.equal(elements.output.textContent, JSON.stringify(request, null, 2));
+});
+
+test("setQuestion populates and focuses the question input", () => {
+  const elements = createElements();
+  let focused = false;
+  elements.input.focus = () => {
+    focused = true;
+  };
+  const controller = createQueryController({
+    ...elements,
+    store: { async getAnthropicApiKey() { return "key"; } },
+    async translate() {
+      throw new Error("unused");
+    },
+    openOptions() {}
+  });
+
+  controller.setQuestion("Users by country");
+
+  assert.equal(elements.input.value, "Users by country");
+  assert.equal(focused, true);
 });
 
 test("empty report is a distinct successful outcome", async () => {

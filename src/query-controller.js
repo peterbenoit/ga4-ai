@@ -33,6 +33,7 @@ export function createQueryController({
   openOptions,
   getDateRange = () => null,
   onResultReady = () => {},
+  onQuestionReady = () => {},
   now = () => new Date()
 }) {
   let metadata = null;
@@ -97,6 +98,7 @@ export function createQueryController({
             const composedAnswer = await compose({ question, report, request: result.request, apiKey });
             answer.textContent = composedAnswer;
             answer.hidden = false;
+            await onQuestionReady({ question, request: result.request, answer: composedAnswer });
             onResultReady({ question, answer: composedAnswer, report, request: result.request });
           } catch (composeError) {
             status.textContent = errorMessage(composeError);
@@ -117,6 +119,11 @@ export function createQueryController({
       ({ metadata, propertyId, token } = value);
       input.disabled = false;
       submitButton.disabled = false;
+    },
+
+    setQuestion(question) {
+      input.value = question;
+      input.focus?.();
     }
   };
 }

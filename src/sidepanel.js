@@ -12,6 +12,8 @@ import {
 import { createPropertyController } from "./property-controller.js";
 import { createPropertyStore } from "./property-store.js";
 import { createQueryController } from "./query-controller.js";
+import { createHistoryController } from "./history-controller.js";
+import { createHistoryStore } from "./history-store.js";
 import { downloadChartImage, downloadCsv, downloadPdfSummary } from "./report-export.js";
 import { renderReport as renderReportView } from "./report-renderer.js";
 import { createSettingsStore } from "./settings-store.js";
@@ -29,7 +31,7 @@ const runReportWithRetry = withAuthRetry(runReport, refreshGoogleToken);
 const fetchPropertyMetadataWithRetry = withAuthRetry(fetchPropertyMetadata, refreshGoogleToken);
 const listAccessiblePropertiesWithRetry = withAuthRetry(listAccessibleProperties, refreshGoogleToken);
 
-initTabs({
+const tabs = initTabs({
   tabButtons: Array.from(document.querySelectorAll(".tab")),
   panels: Array.from(document.querySelectorAll(".tabpanel"))
 });
@@ -115,6 +117,10 @@ const queryController = createQueryController({
   output: document.querySelector("#translation-output"),
   answer: document.querySelector("#answer-output"),
   getDateRange: dateRangePicker.getRange,
+  async onQuestionReady({ question, request, answer }) {
+    await historyStore.add({ question, request, answer });
+    await historyController.refresh();
+  },
   onResultReady(summary) {
     currentSummary = summary;
     exportPdfButton.disabled = false;
@@ -123,6 +129,20 @@ const queryController = createQueryController({
     return chrome.runtime.openOptionsPage();
   }
 });
+
+const historyStore = createHistoryStore();
+const historyController = createHistoryController({
+  store: historyStore,
+  list: document.querySelector("#history-list"),
+  empty: document.querySelector("#history-empty"),
+  clearButton: document.querySelector("#clear-history"),
+  onUseQuestion(question) {
+    queryController.setQuestion(question);
+    tabs.select("ask");
+  }
+});
+
+void historyController.initialize();
 
 const propertySelect = document.querySelector("#property-select");
 const propertyChip = document.querySelector("#toolbar-property-chip");

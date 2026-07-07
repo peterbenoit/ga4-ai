@@ -34,6 +34,10 @@
         <span class="tab__icon" aria-hidden="true">📊</span>
         <span class="tab__label">Report</span>
       </button>
+      <button class="tab" type="button" role="tab" data-tab="history" id="tab-history" aria-controls="panel-history" aria-selected="false">
+        <span class="tab__icon" aria-hidden="true">🕘</span>
+        <span class="tab__label">History</span>
+      </button>
       <button class="tab" type="button" role="tab" data-tab="saved" id="tab-saved" aria-controls="panel-saved" aria-selected="false">
         <span class="tab__icon" aria-hidden="true">🔖</span>
         <span class="tab__label">Saved</span>
@@ -161,6 +165,15 @@
           <button class="btn btn--ghost btn--sm" id="export-chart" type="button" disabled>⬇ Chart PNG</button>
           <button class="btn btn--ghost btn--sm" id="export-pdf" type="button" disabled>⬇ PDF summary</button>
         </div>
+      </section>
+
+      <section class="tabpanel" id="panel-history" data-tabpanel="history" hidden role="tabpanel" aria-labelledby="tab-history">
+        <div class="section-heading">
+          <p class="section-title">History</p>
+          <button class="btn btn--ghost btn--sm" id="clear-history" type="button" disabled>Clear</button>
+        </div>
+        <p class="placeholder-note" id="history-empty">No questions asked yet.</p>
+        <ul class="history-list" id="history-list"></ul>
       </section>
 
       <section class="tabpanel" id="panel-saved" data-tabpanel="saved" hidden role="tabpanel" aria-labelledby="tab-saved">
