@@ -76,6 +76,7 @@ Single source of truth for what v1 does and doesn't include. See `ARCHITECTURE.m
 - [ ] Saved reports can be re-run with a fresh date range without retyping the original question
 - [ ] Saved report list visible and manageable (rename, delete) in the UI
 - [ ] No scheduled/automated delivery of any kind — re-running is manual, triggered by Pete
+- [ ] Preset GA4 reports: deterministic Data API request templates for common GA4 UI-style reports, rendered locally rather than embedded from GA4
 
 ## Phase 7 — Extension UI
 
@@ -117,4 +118,5 @@ Single source of truth for what v1 does and doesn't include. See `ARCHITECTURE.m
 - VA customer-facing anything
 - Navigation/UI-shortcut features (saved filters, sticky headers, exit page reports, etc.)
 - Looker Studio embedding beyond a possible deep-link
+- Embedding or scraping GA4's native Reports/Explorations UI or chart widgets inside the extension
 - Scheduled or automated report delivery (email, Slack, recurring jobs) — saved report definitions are in scope, automating their delivery is not

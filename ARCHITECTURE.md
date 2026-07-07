@@ -17,6 +17,7 @@ This is scoped for one person, one Google identity, running locally. It is not a
 - Natural-language question in, plain-language answer out
 - Google Analytics Admin API access (`accountSummaries.list`, `properties.get`) for property discovery and reporting timezone
 - GA4 Data API access (`runReport`, `properties.getMetadata`)
+- GA4 Data API-backed preset reports that mirror useful GA4 UI reports where the required dimensions/metrics are available
 - Property picker across the GA4 properties Pete has access to
 - Two-stage LLM pipeline: question → structured GA4 request → results → answer, with the answer framed as a comparison/trend where the data supports it, not just a bare number
 - Single-user OAuth via `chrome.identity`
@@ -30,6 +31,7 @@ This is scoped for one person, one Google identity, running locally. It is not a
 - Multi-user access, Peraton team rollout, VA customer access — this includes anyone but Pete opening the extension itself. Exported files (CSV/chart/PDF) leaving the extension and being shared manually is fine; a shareable live link, hosted dashboard, or second person using the tool is not.
 - GTM read access or tag creation
 - Any navigation/UI-shortcut features (exit pages, sticky headers, saved filters, etc.)
+- Embedding GA4's native Reports, Explorations, or chart UI inside the extension. The extension can recreate selected reports from Data API responses and can deep-link to GA4, but it does not host GA4's own report widgets.
 - A backend/proxy server — everything runs client-side in the extension, including chart rendering and file export
 - OAuth verification submission to Google (not needed at single-user scale)
 - Looker Studio embedding (deep-link out only, if it happens at all in v1)
@@ -141,6 +143,14 @@ This is scoped for one person, one Google identity, running locally. It is not a
 
 - Chart type is chosen by data shape, not fixed: date-based dimension → line chart; categorical dimension → bar chart; single aggregate value → no chart, number only. This rule lives in the export/chart layer, applied after the report data returns, not decided by the LLM.
 - Library: **Chart.js**. Canvas-based, so `chart.toBase64Image()` produces the PNG used for both the standalone chart-image export and the embedded image in the PDF export — no separate rendering/conversion step needed. Vanilla-JS friendly, no framework dependency.
+
+## GA4 Native Reports & Presets
+
+- The extension does not embed GA4's native report UI, charts, Explorations, or saved report configurations. Google Analytics does not expose those UI widgets as embeddable components for this extension.
+- The supported path is to use GA4 Data API methods (`runReport`, `runPivotReport`, `runRealtimeReport`, and related metadata/compatibility checks) to fetch the same underlying analytics data, then render local tables/charts in the extension.
+- Preset reports are in scope where they are deterministic Data API request templates. Examples: Traffic acquisition, User acquisition, Pages and screens, Events, Key events/conversions, and Realtime.
+- Presets must still follow the existing rules: client-side rendering only, every chart paired with its table, clear GA4 API errors, no backend, no scheduled delivery, and no native GA4 UI embedding.
+- If a preset needs a GA4-only UI feature that is not represented in the Data API response, provide a deep link to GA4 rather than attempting to scrape or embed the GA4 interface.
 
 ## Model Selection
 

@@ -30,6 +30,22 @@ Already tracked as in-scope v1 work — see `REQUIREMENTS.md` Phase 6
 data table). Nothing new here; noting it so it doesn't get treated as an
 open question.
 
+## GA4 native report UI embedding
+
+Do not attempt to embed, scrape, or recreate GA4's native Reports or
+Explorations UI widgets inside the extension. The practical path is preset
+Data API requests rendered with the extension's own table/chart layer, plus
+deep links out to GA4 when Pete needs the native interface.
+
+Useful future preset candidates:
+
+- Traffic acquisition
+- User acquisition
+- Pages and screens
+- Events
+- Key events / conversions
+- Realtime
+
 ## Report sharing beyond manual export
 
 `ARCHITECTURE.md`'s Sharing Model is CSV/chart-image/PDF export, distributed
