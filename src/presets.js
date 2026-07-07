@@ -79,6 +79,34 @@ export const PRESETS = [
     }
   },
   {
+    id: "join-funnel",
+    label: "Join funnel",
+    description: "Home to /joinmvp to outbound join click, with drop-off between steps. Needs the join-click step configured before it can run.",
+    kind: "funnel",
+    steps: [
+      {
+        label: "Home page",
+        dimensionFilter: {
+          filter: { fieldName: "pagePath", stringFilter: { matchType: "EXACT", value: "/" } }
+        }
+      },
+      {
+        label: "/joinmvp",
+        dimensionFilter: {
+          filter: { fieldName: "pagePath", stringFilter: { matchType: "EXACT", value: "/joinmvp" } }
+        }
+      },
+      {
+        // TODO(MVP-2): replace with the real event/param filter for the
+        // outbound join click, confirmed against GTM-M5WC82N / GTM-5LG8W55
+        // or the GA4 Events report. See REQUIREMENTS-v2.md MVP-2.
+        label: "Outbound join click",
+        pending: true,
+        dimensionFilter: null
+      }
+    ]
+  },
+  {
     id: "realtime",
     label: "Realtime",
     description: "Active users right now, by page.",

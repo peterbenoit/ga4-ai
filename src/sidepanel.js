@@ -11,6 +11,7 @@ import {
   runReport,
   runRealtimeReport
 } from "./ga4-client.js";
+import { runFunnelReport } from "./funnel-report.js";
 import { createPresetController } from "./preset-controller.js";
 import { PRESETS } from "./presets.js";
 import { createPropertyController } from "./property-controller.js";
@@ -245,7 +246,16 @@ async function runPreset(preset) {
 
   const dateRange = dateRangePicker.getRange()
     ?? resolvePresetRange("last30", todayInTimeZone(new Date(), currentMetadata.timeZone));
-  const request = preset.request(dateRange, currentMetadata);
+
+  if (preset.kind === "funnel") {
+    const pendingStep = preset.steps.find((step) => step.pending);
+    if (pendingStep) {
+      presetStatus.textContent = `"${preset.label}" needs the "${pendingStep.label}" step configured before it can run — see REQUIREMENTS-v2.md MVP-2.`;
+      return;
+    }
+  }
+
+  const request = preset.kind === "funnel" ? { dateRanges: [dateRange] } : preset.request(dateRange, currentMetadata);
 
   if (preset.kind === "report") {
     const errors = validateReportRequest(request, currentMetadata);
@@ -257,8 +267,19 @@ async function runPreset(preset) {
 
   presetStatus.textContent = `Running ${preset.label}…`;
   try {
-    const run = preset.kind === "realtime" ? runRealtimeReportWithRetry : runReportWithRetry;
-    const report = await run({ propertyId: currentPropertyId, request, token: googleToken });
+    let report;
+    if (preset.kind === "funnel") {
+      report = await runFunnelReport({
+        propertyId: currentPropertyId,
+        steps: preset.steps,
+        dateRange,
+        token: googleToken,
+        runReport: runReportWithRetry
+      });
+    } else {
+      const run = preset.kind === "realtime" ? runRealtimeReportWithRetry : runReportWithRetry;
+      report = await run({ propertyId: currentPropertyId, request, token: googleToken });
+    }
     renderReport(report);
     tabs.select("report");
     presetStatus.textContent = `Report returned ${report.rowCount} ${report.rowCount === 1 ? "row" : "rows"}.`;

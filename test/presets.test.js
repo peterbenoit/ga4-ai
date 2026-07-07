@@ -5,7 +5,7 @@ import { PRESETS } from "../src/presets.js";
 
 const dateRange = { startDate: "2026-06-01", endDate: "2026-06-30" };
 
-test("every preset has a unique id, a label, and a kind of report or realtime", () => {
+test("every preset has a unique id, a label, and a kind of report, realtime, or funnel", () => {
   const ids = new Set();
 
   for (const preset of PRESETS) {
@@ -14,9 +14,22 @@ test("every preset has a unique id, a label, and a kind of report or realtime", 
     ids.add(preset.id);
     assert.ok(preset.label);
     assert.ok(preset.description);
-    assert.ok(["report", "realtime"].includes(preset.kind));
-    assert.equal(typeof preset.request, "function");
+    assert.ok(["report", "realtime", "funnel"].includes(preset.kind));
+    if (preset.kind === "funnel") {
+      assert.ok(Array.isArray(preset.steps) && preset.steps.length > 0, preset.id);
+    } else {
+      assert.equal(typeof preset.request, "function");
+    }
   }
+});
+
+test("join-funnel preset flags its outbound-click step as pending until configured", () => {
+  const joinFunnel = PRESETS.find((preset) => preset.id === "join-funnel");
+
+  assert.ok(joinFunnel);
+  const pendingSteps = joinFunnel.steps.filter((step) => step.pending);
+  assert.equal(pendingSteps.length, 1);
+  assert.equal(pendingSteps[0].label, "Outbound join click");
 });
 
 test("report-kind presets require a metric and a date range", () => {
