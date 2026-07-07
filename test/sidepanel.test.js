@@ -54,6 +54,15 @@ test("side panel exposes question translation controls and output", async () => 
   assert.match(html, /id="tab-history"/);
   assert.match(html, /id="history-list"/);
   assert.match(html, /id="clear-history"[^>]*disabled/);
+  assert.match(html, /id="toggle-raw-table"[^>]*disabled/);
+});
+
+test("side panel raw table toggle starts hidden and is enabled once a report renders", async () => {
+  const script = await readFile(new URL("src/sidepanel.js", rootUrl), "utf8");
+
+  assert.match(script, /toggleRawTableButton\.addEventListener\("click"/);
+  assert.match(script, /rawTableVisible = !rawTableVisible/);
+  assert.match(script, /toggleRawTableButton\.disabled = false/);
 });
 
 test("side panel wires metadata into the query controller", async () => {

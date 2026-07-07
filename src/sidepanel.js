@@ -14,6 +14,8 @@ import { createPropertyStore } from "./property-store.js";
 import { createQueryController } from "./query-controller.js";
 import { createHistoryController } from "./history-controller.js";
 import { createHistoryStore } from "./history-store.js";
+import { createSavedReportController } from "./saved-report-controller.js";
+import { createSavedReportStore } from "./saved-report-store.js";
 import { downloadChartImage, downloadCsv, downloadPdfSummary } from "./report-export.js";
 import { renderReport as renderReportView } from "./report-renderer.js";
 import { createSettingsStore } from "./settings-store.js";
@@ -39,15 +41,33 @@ const tabs = initTabs({
 let currentChart = null;
 let currentReport = null;
 let currentSummary = null;
+let currentPropertyId = "";
+let lastQuestion = null;
+const settingsStore = createSettingsStore();
+const saveReportButton = document.querySelector("#save-report");
 const exportCsvButton = document.querySelector("#export-csv");
 const exportChartButton = document.querySelector("#export-chart");
 const exportPdfButton = document.querySelector("#export-pdf");
+const reportTable = document.querySelector("#report-table");
+const toggleRawTableButton = document.querySelector("#toggle-raw-table");
+
+let rawTableVisible = false;
+
+function applyRawTableVisibility() {
+  reportTable.hidden = !rawTableVisible;
+  toggleRawTableButton.textContent = rawTableVisible ? "Hide raw table" : "Show raw table";
+}
+
+toggleRawTableButton.addEventListener("click", () => {
+  rawTableVisible = !rawTableVisible;
+  applyRawTableVisibility();
+});
 
 function renderReport(report) {
   currentReport = report;
   currentChart = renderReportView({
     report,
-    table: document.querySelector("#report-table"),
+    table: reportTable,
     canvas: document.querySelector("#report-chart"),
     chartNote: document.querySelector("#report-chart-note"),
     previousChart: currentChart,
@@ -58,6 +78,8 @@ function renderReport(report) {
   exportCsvButton.disabled = false;
   exportChartButton.disabled = !currentChart;
   exportPdfButton.disabled = true;
+  toggleRawTableButton.disabled = false;
+  applyRawTableVisibility();
 }
 
 exportCsvButton.addEventListener("click", () => {
@@ -108,7 +130,7 @@ const queryController = createQueryController({
   runReport: runReportWithRetry,
   renderReport,
   compose: composeAnswer,
-  store: createSettingsStore(),
+  store: settingsStore,
   form: document.querySelector("#question-form"),
   input: document.querySelector("#question"),
   submitButton: document.querySelector("#translate-question"),
@@ -124,6 +146,9 @@ const queryController = createQueryController({
   onResultReady(summary) {
     currentSummary = summary;
     exportPdfButton.disabled = false;
+    lastQuestion = { question: summary.question, request: summary.request };
+    saveReportButton.hidden = false;
+    saveReportButton.disabled = false;
   },
   openOptions() {
     return chrome.runtime.openOptionsPage();
@@ -175,6 +200,7 @@ const propertyController = createPropertyController({
     return option;
   },
   onMetadataReady({ propertyId, metadata }) {
+    currentPropertyId = propertyId;
     updatePropertyChip();
     queryController.setContext({
       propertyId,
@@ -183,6 +209,67 @@ const propertyController = createPropertyController({
     });
   }
 });
+
+saveReportButton.addEventListener("click", async () => {
+  if (!lastQuestion) {
+    return;
+  }
+  const name = window.prompt("Name this saved report", lastQuestion.question);
+  if (name === null) {
+    return;
+  }
+  await savedReportStore.add({ name, question: lastQuestion.question, request: lastQuestion.request });
+  await savedReportController.refresh();
+});
+
+const savedStatus = document.querySelector("#saved-status");
+const savedReportStore = createSavedReportStore();
+const savedReportController = createSavedReportController({
+  store: savedReportStore,
+  list: document.querySelector("#saved-list"),
+  empty: document.querySelector("#saved-empty"),
+  clearButton: document.querySelector("#clear-saved"),
+  async onRerun(entry) {
+    if (!currentPropertyId) {
+      savedStatus.textContent = "Select a property before re-running a saved report.";
+      return;
+    }
+
+    const dateRange = dateRangePicker.getRange();
+    const request = {
+      ...entry.request,
+      dateRanges: dateRange ? [dateRange] : entry.request.dateRanges
+    };
+
+    savedStatus.textContent = "Running saved report…";
+    try {
+      const report = await runReportWithRetry({
+        propertyId: currentPropertyId,
+        request,
+        token: googleToken
+      });
+      renderReport(report);
+      tabs.select("report");
+      savedStatus.textContent = `Report returned ${report.rowCount} ${report.rowCount === 1 ? "row" : "rows"}.`;
+
+      const apiKey = await settingsStore.getAnthropicApiKey();
+      if (report.rowCount > 0 && apiKey) {
+        const composedAnswer = await composeAnswer({
+          question: entry.question,
+          report,
+          request,
+          apiKey
+        });
+        currentSummary = { question: entry.question, answer: composedAnswer, report, request };
+        exportPdfButton.disabled = false;
+      }
+    } catch (error) {
+      savedStatus.textContent = error instanceof Error ? error.message : String(error);
+    }
+  }
+});
+
+void savedReportController.initialize();
 
 const controller = createAuthController({
   getAccessToken: getGoogleAccessToken,

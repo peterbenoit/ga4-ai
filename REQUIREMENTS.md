@@ -85,7 +85,7 @@ Single source of truth for what v1 does and doesn't include. See `ARCHITECTURE.m
 - [ ] Property picker visible and functional
 - [ ] Options page for entering/updating Anthropic API key
 - [ ] Loading state while translate → execute → compose pipeline runs
-- [ ] Toggle to view raw report table
+- [x] Toggle to view raw report table
 - [ ] Export buttons (CSV / chart image / PDF) visible on any result that has them available
 - [x] History panel: view previous questions, populate Ask tab, copy, delete one, clear all
 - [ ] Saved-reports panel: view, re-run, rename, delete

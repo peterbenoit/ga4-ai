@@ -93,6 +93,7 @@
         </form>
         <p class="status-line" id="translation-status" role="status">Load property metadata to ask a question.</p>
         <p class="answer-block" id="answer-output" hidden></p>
+        <button class="btn btn--ghost btn--sm" id="save-report" type="button" disabled hidden>🔖 Save this report</button>
         <details class="request-details">
           <summary>GA4 request sent</summary>
           <pre class="output-block" id="translation-output" hidden></pre>
@@ -151,7 +152,10 @@
           <p class="placeholder-note" id="report-chart-note">Run a chartable report to see a chart here.</p>
         </div>
 
-        <p class="section-title">Data</p>
+        <div class="section-heading">
+          <p class="section-title">Data</p>
+          <button class="btn btn--ghost btn--sm" id="toggle-raw-table" type="button" disabled>Show raw table</button>
+        </div>
         <div class="table-scroll">
           <table class="data-table" id="report-table" hidden>
             <caption>GA4 report data</caption>
@@ -177,9 +181,13 @@
       </section>
 
       <section class="tabpanel" id="panel-saved" data-tabpanel="saved" hidden role="tabpanel" aria-labelledby="tab-saved">
-        <p class="section-title">Saved Reports <span class="section-title__tag">Phase 6</span></p>
-        <p class="placeholder-note">No saved reports yet. Once Phase 6 ships, questions you run can be saved here and re-run with a fresh date range.</p>
-        <button class="btn btn--ghost btn--sm" type="button" disabled>+ Save current question</button>
+        <div class="section-heading">
+          <p class="section-title">Saved Reports</p>
+          <button class="btn btn--ghost btn--sm" id="clear-saved" type="button" disabled>Clear</button>
+        </div>
+        <p class="status-line" id="saved-status" role="status"></p>
+        <p class="placeholder-note" id="saved-empty">No saved reports yet. Run a question from the Ask tab, then use "Save this report" to add it here.</p>
+        <ul class="history-list" id="saved-list"></ul>
       </section>
 
     </main>
