@@ -7,7 +7,7 @@ export function withAuthRetry(fn, refreshToken) {
         throw error;
       }
 
-      const freshToken = await refreshToken(options.token);
+      const freshToken = await refreshToken(options?.token);
       return await fn({ ...options, token: freshToken });
     }
   };
