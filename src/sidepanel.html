@@ -60,6 +60,10 @@
 
 		<section class="tabpanel is-active" id="panel-ask" data-tabpanel="ask" role="tabpanel"
 			aria-labelledby="tab-ask">
+			<p class="section-title">Quick reports</p>
+			<div class="export-row" id="preset-list"></div>
+			<p class="status-line" id="preset-status" role="status"></p>
+
 			<p class="section-title">Question</p>
 			<form id="question-form" class="query-form">
 				<div class="field">
@@ -149,11 +153,11 @@
 			<p class="section-title">Report Summary</p>
 			<div class="stat-grid">
 				<div class="stat-card">
-					<p class="stat-card__value">0</p>
+					<p class="stat-card__value" id="stat-rows">0</p>
 					<p class="stat-card__label">Rows</p>
 				</div>
 				<div class="stat-card">
-					<p class="stat-card__value">0</p>
+					<p class="stat-card__value" id="stat-columns">0</p>
 					<p class="stat-card__label">Columns</p>
 				</div>
 			</div>
@@ -166,7 +170,7 @@
 
 			<div class="section-heading">
 				<p class="section-title">Data</p>
-				<button class="btn btn--ghost btn--sm" id="toggle-raw-table" type="button" disabled>Show raw
+				<button class="btn btn--ghost btn--sm mb-1" id="toggle-raw-table" type="button" disabled>Show raw
 					table</button>
 			</div>
 			<div class="table-scroll">

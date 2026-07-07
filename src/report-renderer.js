@@ -1,4 +1,5 @@
 const DATE_DIMENSIONS = new Set(["date", "dateHour", "dateHourMinute"]);
+const MAX_TICK_LABEL_LENGTH = 30;
 
 function toNumber(value) {
   const number = Number(String(value).replaceAll(",", ""));
@@ -9,6 +10,13 @@ function isDateDimension(header) {
   return DATE_DIMENSIONS.has(header);
 }
 
+function truncateLabel(value) {
+  const text = String(value);
+  return text.length > MAX_TICK_LABEL_LENGTH
+    ? `${text.slice(0, MAX_TICK_LABEL_LENGTH - 1)}…`
+    : text;
+}
+
 export function selectChartConfig(report) {
   if (report.rows.length === 0 || report.headers.length < 2) {
     return null;
@@ -16,11 +24,22 @@ export function selectChartConfig(report) {
 
   const [dimensionHeader, metricHeader] = report.headers;
   const chartType = isDateDimension(dimensionHeader) ? "line" : "bar";
+  const labels = report.rows.map((row) => row[0]);
+
+  // Bar-chart category labels rotated on the x-axis become unreadable once
+  // they're long (page paths, event names). Flip to a horizontal bar so
+  // labels read left-to-right instead, and truncate the visible tick text
+  // (full value still shows in the tooltip on hover) rather than cramming
+  // the extension's narrow side panel with overlapping diagonal text.
+  const isHorizontal = chartType === "bar"
+    && labels.some((label) => String(label).length > MAX_TICK_LABEL_LENGTH);
+  const categoryAxis = isHorizontal ? "y" : "x";
+  const valueAxis = isHorizontal ? "x" : "y";
 
   return {
     type: chartType,
     data: {
-      labels: report.rows.map((row) => row[0]),
+      labels,
       datasets: [{
         label: metricHeader,
         data: report.rows.map((row) => toNumber(row[1])),
@@ -30,16 +49,31 @@ export function selectChartConfig(report) {
       }]
     },
     options: {
+      indexAxis: isHorizontal ? "y" : "x",
       animation: false,
       maintainAspectRatio: false,
       plugins: {
         legend: {
           display: true
+        },
+        tooltip: {
+          callbacks: {
+            title(items) {
+              return items.map((item) => String(labels[item.dataIndex]));
+            }
+          }
         }
       },
       scales: {
-        y: {
+        [valueAxis]: {
           beginAtZero: true
+        },
+        [categoryAxis]: {
+          ticks: {
+            callback(value, index) {
+              return truncateLabel(labels[index]);
+            }
+          }
         }
       }
     }

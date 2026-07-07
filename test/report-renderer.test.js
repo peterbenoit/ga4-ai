@@ -62,6 +62,39 @@ test("categorical dimension reports render as bar charts", () => {
   assert.equal(config.type, "bar");
   assert.deepEqual(config.data.labels, ["United States", "Canada"]);
   assert.deepEqual(config.data.datasets[0].data, [120, 25]);
+  assert.equal(config.options.indexAxis, "x");
+});
+
+test("short-label bar charts stay vertical", () => {
+  const config = selectChartConfig({
+    headers: ["country", "activeUsers"],
+    rows: [["United States", "120"], ["Canada", "25"]],
+    rowCount: 2
+  });
+
+  assert.equal(config.options.indexAxis, "x");
+  assert.ok(config.options.scales.y);
+  assert.ok(config.options.scales.x.ticks.callback);
+});
+
+test("long-label bar charts flip to horizontal with truncated ticks and full-text tooltips", () => {
+  const longPath = "/pwa/activity/dashboard/specimen_collection";
+  const config = selectChartConfig({
+    headers: ["pagePath", "screenPageViews"],
+    rows: [[longPath, "3500"], ["/pwa/about", "120"]],
+    rowCount: 2
+  });
+
+  assert.equal(config.options.indexAxis, "y");
+  assert.ok(config.options.scales.x);
+  assert.ok(config.options.scales.y.ticks.callback);
+
+  const truncated = config.options.scales.y.ticks.callback(longPath, 0);
+  assert.ok(truncated.length < longPath.length);
+  assert.ok(truncated.endsWith("…"));
+
+  const tooltipTitle = config.options.plugins.tooltip.callbacks.title([{ dataIndex: 0 }]);
+  assert.deepEqual(tooltipTitle, [longPath]);
 });
 
 test("single aggregate reports do not render a chart", () => {

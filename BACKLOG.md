@@ -37,14 +37,11 @@ Explorations UI widgets inside the extension. The practical path is preset
 Data API requests rendered with the extension's own table/chart layer, plus
 deep links out to GA4 when Pete needs the native interface.
 
-Useful future preset candidates:
-
-- Traffic acquisition
-- User acquisition
-- Pages and screens
-- Events
-- Key events / conversions
-- Realtime
+Preset reports shipped in Phase 6 (`presets.js` / `preset-controller.js`,
+"Quick reports" row on the Ask tab): Traffic acquisition, User acquisition,
+Pages and screens, Events, Key events / conversions, Realtime. Additional
+preset candidates worth adding later if a real need comes up: Landing pages,
+Demographics (country/city), Tech overview (device/browser).
 
 ## Report sharing beyond manual export
 

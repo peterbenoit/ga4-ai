@@ -76,7 +76,7 @@ Single source of truth for what v1 does and doesn't include. See `ARCHITECTURE.m
 - [x] Saved reports can be re-run with a fresh date range without retyping the original question
 - [x] Saved report list visible and manageable (rename, delete) in the UI — pinned entries live in the same History panel, with Re-run/Rename/Unpin/Delete
 - [x] No scheduled/automated delivery of any kind — re-running is manual, triggered by Pete
-- [ ] Preset GA4 reports: deterministic Data API request templates for common GA4 UI-style reports, rendered locally rather than embedded from GA4
+- [x] Preset GA4 reports: deterministic Data API request templates for common GA4 UI-style reports, rendered locally rather than embedded from GA4
 
 ## Phase 7 — Extension UI
 

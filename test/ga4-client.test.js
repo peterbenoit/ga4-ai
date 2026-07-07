@@ -4,7 +4,8 @@ import test from "node:test";
 import {
   fetchPropertyMetadata,
   listAccessibleProperties,
-  runReport
+  runReport,
+  runRealtimeReport
 } from "../src/ga4-client.js";
 
 function jsonResponse(body, { ok = true, status = 200 } = {}) {
@@ -214,4 +215,33 @@ test("runReport preserves an empty result as a non-error", async () => {
 
   assert.deepEqual(report.rows, []);
   assert.equal(report.rowCount, 0);
+});
+
+test("runRealtimeReport posts to the realtime endpoint and normalizes raw rows", async () => {
+  const raw = {
+    dimensionHeaders: [{ name: "unifiedScreenName" }],
+    metricHeaders: [{ name: "activeUsers" }],
+    rows: [{ dimensionValues: [{ value: "/home" }], metricValues: [{ value: "4" }] }],
+    rowCount: 1
+  };
+  let calledUrl;
+  const fetchImpl = async (url) => {
+    calledUrl = url;
+    return jsonResponse(raw);
+  };
+
+  const report = await runRealtimeReport({
+    propertyId: "100",
+    request: { dimensions: [{ name: "unifiedScreenName" }], metrics: [{ name: "activeUsers" }] },
+    token: "secret",
+    fetchImpl
+  });
+
+  assert.equal(
+    calledUrl,
+    "https://analyticsdata.googleapis.com/v1beta/properties/100:runRealtimeReport"
+  );
+  assert.deepEqual(report.headers, ["unifiedScreenName", "activeUsers"]);
+  assert.deepEqual(report.rows, [["/home", "4"]]);
+  assert.equal(report.rowCount, 1);
 });

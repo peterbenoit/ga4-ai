@@ -4,18 +4,23 @@ import { withAuthRetry } from "./auth-retry.js";
 import { composeAnswer } from "./composer.js";
 import { createDateRangePicker } from "./date-range-picker.js";
 import flatpickr from "./vendor/flatpickr/index.js";
+import { resolvePresetRange } from "./date-range.js";
 import {
   fetchPropertyMetadata,
   listAccessibleProperties,
-  runReport
+  runReport,
+  runRealtimeReport
 } from "./ga4-client.js";
+import { createPresetController } from "./preset-controller.js";
+import { PRESETS } from "./presets.js";
 import { createPropertyController } from "./property-controller.js";
 import { createPropertyStore } from "./property-store.js";
-import { createQueryController } from "./query-controller.js";
+import { createQueryController, todayInTimeZone } from "./query-controller.js";
 import { createHistoryController } from "./history-controller.js";
 import { createHistoryStore } from "./history-store.js";
 import { downloadChartImage, downloadCsv, downloadPdfSummary } from "./report-export.js";
 import { renderReport as renderReportView } from "./report-renderer.js";
+import { validateReportRequest } from "./request-validator.js";
 import { createSettingsStore } from "./settings-store.js";
 import { initTabs } from "./tabs.js";
 import { translateQuestion } from "./translator.js";
@@ -28,6 +33,7 @@ async function refreshGoogleToken(staleToken) {
 }
 
 const runReportWithRetry = withAuthRetry(runReport, refreshGoogleToken);
+const runRealtimeReportWithRetry = withAuthRetry(runRealtimeReport, refreshGoogleToken);
 const fetchPropertyMetadataWithRetry = withAuthRetry(fetchPropertyMetadata, refreshGoogleToken);
 const listAccessiblePropertiesWithRetry = withAuthRetry(listAccessibleProperties, refreshGoogleToken);
 
@@ -40,6 +46,7 @@ let currentChart = null;
 let currentReport = null;
 let currentSummary = null;
 let currentPropertyId = "";
+let currentMetadata = null;
 let lastHistoryEntry = null;
 const settingsStore = createSettingsStore();
 const pinReportButton = document.querySelector("#pin-report");
@@ -48,6 +55,8 @@ const exportChartButton = document.querySelector("#export-chart");
 const exportPdfButton = document.querySelector("#export-pdf");
 const reportTable = document.querySelector("#report-table");
 const toggleRawTableButton = document.querySelector("#toggle-raw-table");
+const statRows = document.querySelector("#stat-rows");
+const statColumns = document.querySelector("#stat-columns");
 
 let rawTableVisible = false;
 
@@ -63,6 +72,8 @@ toggleRawTableButton.addEventListener("click", () => {
 
 function renderReport(report) {
   currentReport = report;
+  statRows.textContent = String(report.rowCount);
+  statColumns.textContent = String(report.headers.length);
   currentChart = renderReportView({
     report,
     table: reportTable,
@@ -224,6 +235,61 @@ pinReportButton.addEventListener("click", async () => {
   await historyController.refresh();
 });
 
+const presetStatus = document.querySelector("#preset-status");
+
+async function runPreset(preset) {
+  if (!currentPropertyId || !currentMetadata) {
+    presetStatus.textContent = "Select a property and load its metadata first.";
+    return;
+  }
+
+  const dateRange = dateRangePicker.getRange()
+    ?? resolvePresetRange("last30", todayInTimeZone(new Date(), currentMetadata.timeZone));
+  const request = preset.request(dateRange, currentMetadata);
+
+  if (preset.kind === "report") {
+    const errors = validateReportRequest(request, currentMetadata);
+    if (errors.length > 0) {
+      presetStatus.textContent = `This property doesn't support "${preset.label}": ${errors.join("; ")}`;
+      return;
+    }
+  }
+
+  presetStatus.textContent = `Running ${preset.label}…`;
+  try {
+    const run = preset.kind === "realtime" ? runRealtimeReportWithRetry : runReportWithRetry;
+    const report = await run({ propertyId: currentPropertyId, request, token: googleToken });
+    renderReport(report);
+    tabs.select("report");
+    presetStatus.textContent = `Report returned ${report.rowCount} ${report.rowCount === 1 ? "row" : "rows"}.`;
+
+    if (report.rowCount === 0) {
+      return;
+    }
+
+    const apiKey = await settingsStore.getAnthropicApiKey();
+    if (!apiKey) {
+      return;
+    }
+
+    const composedAnswer = await composeAnswer({ question: preset.label, report, request, apiKey });
+    currentSummary = { question: preset.label, answer: composedAnswer, report, request };
+    exportPdfButton.disabled = false;
+    lastHistoryEntry = await historyStore.add({ question: preset.label, request, answer: composedAnswer });
+    pinReportButton.hidden = false;
+    pinReportButton.disabled = false;
+    await historyController.refresh();
+  } catch (error) {
+    presetStatus.textContent = error instanceof Error ? error.message : String(error);
+  }
+}
+
+createPresetController({
+  presets: PRESETS,
+  container: document.querySelector("#preset-list"),
+  onRun: runPreset
+});
+
 const propertySelect = document.querySelector("#property-select");
 const propertyChip = document.querySelector("#toolbar-property-chip");
 
@@ -256,6 +322,7 @@ const propertyController = createPropertyController({
   },
   onMetadataReady({ propertyId, metadata }) {
     currentPropertyId = propertyId;
+    currentMetadata = metadata;
     updatePropertyChip();
     queryController.setContext({
       propertyId,

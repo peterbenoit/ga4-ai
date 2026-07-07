@@ -148,8 +148,10 @@ This is scoped for one person, one Google identity, running locally. It is not a
 
 - The extension does not embed GA4's native report UI, charts, Explorations, or saved report configurations. Google Analytics does not expose those UI widgets as embeddable components for this extension.
 - The supported path is to use GA4 Data API methods (`runReport`, `runPivotReport`, `runRealtimeReport`, and related metadata/compatibility checks) to fetch the same underlying analytics data, then render local tables/charts in the extension.
-- Preset reports are in scope where they are deterministic Data API request templates. Examples: Traffic acquisition, User acquisition, Pages and screens, Events, Key events/conversions, and Realtime.
-- Presets must still follow the existing rules: client-side rendering only, every chart paired with its table, clear GA4 API errors, no backend, no scheduled delivery, and no native GA4 UI embedding.
+- Preset reports are in scope where they are deterministic Data API request templates. Implemented in `presets.js`: Traffic acquisition, User acquisition, Pages and screens, Events, Key events/conversions, and Realtime — surfaced as a "Quick reports" button row at the top of the Ask tab (`preset-controller.js`).
+- Presets follow the existing rules: client-side rendering only, every chart paired with its table, clear GA4 API errors, no backend, no scheduled delivery, and no native GA4 UI embedding.
+- Presets skip the translate step entirely — no LLM call for the request shape. Report-kind presets are still validated against the property's fetched metadata (`request-validator.js`) before firing, since not every property has every standard dimension/metric. Realtime is a distinct API method (`runRealtimeReport`, `:runRealtimeReport`) with its own dimension set (e.g. `unifiedScreenName`) and no `dateRanges` — validation is skipped for it rather than checked against the standard-report metadata list, which doesn't reliably describe realtime-only fields.
+- A successful preset run still goes through the compose step and lands in question history like any other question, so it can be pinned for later re-run the same way.
 - If a preset needs a GA4-only UI feature that is not represented in the Data API response, provide a deep link to GA4 rather than attempting to scrape or embed the GA4 interface.
 
 ## Model Selection

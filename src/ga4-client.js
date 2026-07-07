@@ -109,3 +109,31 @@ export async function runReport({
     raw
   };
 }
+
+export async function runRealtimeReport({
+  propertyId,
+  request,
+  token,
+  fetchImpl = globalThis.fetch
+}) {
+  const raw = await fetchJson(
+    `${DATA_API}/properties/${propertyId}:runRealtimeReport`,
+    { token, fetchImpl, method: "POST", body: request }
+  );
+
+  const headers = [
+    ...(raw.dimensionHeaders ?? []).map(({ name }) => name),
+    ...(raw.metricHeaders ?? []).map(({ name }) => name)
+  ];
+  const rows = (raw.rows ?? []).map((row) => [
+    ...(row.dimensionValues ?? []).map(({ value }) => value),
+    ...(row.metricValues ?? []).map(({ value }) => value)
+  ]);
+
+  return {
+    headers,
+    rows,
+    rowCount: raw.rowCount ?? rows.length,
+    raw
+  };
+}

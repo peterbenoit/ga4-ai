@@ -9,7 +9,7 @@ test("side panel exposes visible authentication status and connect action", asyn
 
   assert.match(html, /id="auth-status" role="status"/);
   assert.match(html, /id="connect-google"[^>]*hidden/);
-  assert.match(html, />Connect Google Analytics<\/button>/);
+  assert.match(html, />Connect Google\s+Analytics<\/button>/);
 });
 
 test("side panel initializes the authentication controller", async () => {
@@ -93,4 +93,26 @@ test("side panel wires pin-and-rerun into the history controller", async () => {
   assert.match(script, /pinReportButton\.addEventListener\("click"/);
   assert.match(script, /historyStore\.pin\(/);
   assert.match(script, /onRerun\(entry\)/);
+});
+
+test("side panel exposes and wires quick-report presets", async () => {
+  const html = await readFile(new URL("src/sidepanel.html", rootUrl), "utf8");
+  const script = await readFile(new URL("src/sidepanel.js", rootUrl), "utf8");
+
+  assert.match(html, /id="preset-list"/);
+  assert.match(html, /id="preset-status" role="status"/);
+  assert.match(script, /createPresetController/);
+  assert.match(script, /PRESETS/);
+  assert.match(script, /runRealtimeReport/);
+  assert.match(script, /validateReportRequest/);
+});
+
+test("side panel wires the report summary row-count and column-count stats", async () => {
+  const html = await readFile(new URL("src/sidepanel.html", rootUrl), "utf8");
+  const script = await readFile(new URL("src/sidepanel.js", rootUrl), "utf8");
+
+  assert.match(html, /id="stat-rows"/);
+  assert.match(html, /id="stat-columns"/);
+  assert.match(script, /statRows\.textContent = String\(report\.rowCount\)/);
+  assert.match(script, /statColumns\.textContent = String\(report\.headers\.length\)/);
 });
