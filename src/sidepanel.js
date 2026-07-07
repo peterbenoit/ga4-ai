@@ -12,6 +12,8 @@ import {
 import { createPropertyController } from "./property-controller.js";
 import { createPropertyStore } from "./property-store.js";
 import { createQueryController } from "./query-controller.js";
+import { downloadChartImage, downloadCsv } from "./report-export.js";
+import { renderReport as renderReportView } from "./report-renderer.js";
 import { createSettingsStore } from "./settings-store.js";
 import { initTabs } from "./tabs.js";
 import { translateQuestion } from "./translator.js";
@@ -32,35 +34,48 @@ initTabs({
   panels: Array.from(document.querySelectorAll(".tabpanel"))
 });
 
+let currentChart = null;
+let currentReport = null;
+const exportCsvButton = document.querySelector("#export-csv");
+const exportChartButton = document.querySelector("#export-chart");
+
 function renderReport(report) {
-  const table = document.querySelector("#report-table");
-  const caption = document.createElement("caption");
-  caption.textContent = "GA4 report data";
-  const head = document.createElement("thead");
-  const headerRow = document.createElement("tr");
-
-  for (const header of report.headers) {
-    const cell = document.createElement("th");
-    cell.scope = "col";
-    cell.textContent = header;
-    headerRow.append(cell);
-  }
-  head.append(headerRow);
-
-  const body = document.createElement("tbody");
-  for (const row of report.rows) {
-    const tableRow = document.createElement("tr");
-    for (const value of row) {
-      const cell = document.createElement("td");
-      cell.textContent = value;
-      tableRow.append(cell);
+  currentReport = report;
+  currentChart = renderReportView({
+    report,
+    table: document.querySelector("#report-table"),
+    canvas: document.querySelector("#report-chart"),
+    chartNote: document.querySelector("#report-chart-note"),
+    previousChart: currentChart,
+    createChart(canvas, config) {
+      return new globalThis.Chart(canvas, config);
     }
-    body.append(tableRow);
+  });
+  exportCsvButton.disabled = false;
+  exportChartButton.disabled = !currentChart;
+}
+
+exportCsvButton.addEventListener("click", () => {
+  if (!currentReport) {
+    return;
   }
 
-  table.replaceChildren(caption, head, body);
-  table.hidden = false;
-}
+  downloadCsv({
+    report: currentReport,
+    filename: `ga4-report-${new Date().toISOString().slice(0, 10)}.csv`
+  });
+});
+
+exportChartButton.addEventListener("click", () => {
+  if (!currentChart) {
+    return;
+  }
+
+  downloadChartImage({
+    chart: currentChart,
+    filename: `ga4-chart-${new Date().toISOString().slice(0, 10)}.png`
+  });
+});
 
 const dateRangePicker = createDateRangePicker({
   presetSelect: document.querySelector("#date-preset"),

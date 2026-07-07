@@ -6,6 +6,7 @@
     <title>GA4 Query Assistant</title>
     <link rel="stylesheet" href="vendor/flatpickr/flatpickr.min.css">
     <link rel="stylesheet" href="sidepanel.css">
+    <script src="vendor/chartjs/chart.umd.min.js"></script>
     <script type="module" src="sidepanel.js"></script>
   </head>
   <body>
@@ -139,6 +140,12 @@
           </div>
         </div>
 
+        <p class="section-title">Chart</p>
+        <div class="chart-frame">
+          <canvas id="report-chart" hidden></canvas>
+          <p class="placeholder-note" id="report-chart-note">Run a chartable report to see a chart here.</p>
+        </div>
+
         <p class="section-title">Data</p>
         <div class="table-scroll">
           <table class="data-table" id="report-table" hidden>
@@ -149,11 +156,11 @@
 
         <p class="section-title">Export <span class="section-title__tag">Phase 6</span></p>
         <div class="export-row">
-          <button class="btn btn--ghost btn--sm" type="button" disabled>⬇ CSV</button>
-          <button class="btn btn--ghost btn--sm" type="button" disabled>⬇ Chart PNG</button>
+          <button class="btn btn--ghost btn--sm" id="export-csv" type="button" disabled>⬇ CSV</button>
+          <button class="btn btn--ghost btn--sm" id="export-chart" type="button" disabled>⬇ Chart PNG</button>
           <button class="btn btn--ghost btn--sm" type="button" disabled>⬇ PDF summary</button>
         </div>
-        <p class="placeholder-note">Chart rendering and file export ship in Phase 6 — not wired up yet.</p>
+        <p class="placeholder-note">PDF export ships later in Phase 6.</p>
       </section>
 
       <section class="tabpanel" id="panel-saved" data-tabpanel="saved" hidden role="tabpanel" aria-labelledby="tab-saved">

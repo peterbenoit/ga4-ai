@@ -56,20 +56,20 @@ Single source of truth for what v1 does and doesn't include. See `ARCHITECTURE.m
 
 ## Phase 5 — Answer Composition
 
-- [ ] Model set to `claude-haiku-4-5-20251001`, hardcoded in one config location (no runtime picker)
-- [ ] Claude call turns raw rows into a short plain-language answer
-- [ ] Answer includes or links to the supporting numbers (no unverifiable claims)
-- [ ] Where the data supports it, answer frames a comparison/trend (vs. prior period, vs. another segment) rather than a bare number
-- [ ] Handles "no data matches" as a real answer, not a hallucinated one
-- [ ] The exact request (dimensions/metrics/date range/filters) that produced an answer is retrievable later, not just the sentence
+- [x] Model set to `claude-haiku-4-5-20251001`, hardcoded in one config location (no runtime picker)
+- [x] Claude call turns raw rows into a short plain-language answer
+- [x] Answer includes or links to the supporting numbers (no unverifiable claims)
+- [x] Where the data supports it, answer frames a comparison/trend (vs. prior period, vs. another segment) rather than a bare number
+- [x] Handles "no data matches" as a real answer, not a hallucinated one
+- [x] The exact request (dimensions/metrics/date range/filters) that produced an answer is retrievable later, not just the sentence
 
 ## Phase 6 — Charts, Export & Saved Reports
 
-- [ ] Chart rendering via Chart.js (canvas-based) for report results where the data shape supports a chart (time series, category comparison)
-- [ ] Chart type chosen by data shape via a fixed rule (date dimension → line, category → bar, single aggregate → number only, no chart) — not left to the LLM to decide
-- [ ] Every chart has its data table available alongside it — never chart-only
-- [ ] CSV export of the raw data table
-- [ ] Chart image export (PNG via Chart.js's `toBase64Image()`)
+- [x] Chart rendering via Chart.js (canvas-based) for report results where the data shape supports a chart (time series, category comparison)
+- [x] Chart type chosen by data shape via a fixed rule (date dimension → line, category → bar, single aggregate → number only, no chart) — not left to the LLM to decide
+- [x] Every chart has its data table available alongside it — never chart-only
+- [x] CSV export of the raw data table
+- [x] Chart image export (PNG via Chart.js's `toBase64Image()`)
 - [ ] One-page PDF export combining the question, the answer, the chart (reusing the same PNG), and the data table
 - [ ] Named/saved report definitions: save a question (with its dimensions/metrics/filters) for re-running later
 - [ ] Saved reports can be re-run with a fresh date range without retyping the original question
