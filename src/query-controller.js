@@ -34,6 +34,7 @@ export function createQueryController({
   getDateRange = () => null,
   onResultReady = () => {},
   onQuestionReady = () => {},
+  onQuestionStart = () => {},
   now = () => new Date()
 }) {
   let metadata = null;
@@ -59,6 +60,7 @@ export function createQueryController({
     output.hidden = true;
     answer.hidden = true;
     status.textContent = "Translating question into a GA4 request…";
+    onQuestionStart();
 
     try {
       const apiKey = await store.getAnthropicApiKey();

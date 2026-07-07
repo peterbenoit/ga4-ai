@@ -67,6 +67,28 @@ test("missing API key surfaces settings action without calling Claude", async ()
   assert.equal(elements.settingsButton.hidden, false);
 });
 
+test("onQuestionStart fires before translation on every submit, even a clarification", async () => {
+  const elements = createElements();
+  const starts = [];
+  const controller = createQueryController({
+    ...elements,
+    store: { async getAnthropicApiKey() { return "key"; } },
+    async translate() {
+      return { type: "clarification", question: "Which event counts as a completion?" };
+    },
+    onQuestionStart() {
+      starts.push(true);
+    },
+    openOptions() {}
+  });
+  controller.setContext({ metadata, propertyId: "100", token: "google-token" });
+  elements.input.value = "How many people completed the contact form?";
+
+  await elements.form.submit();
+
+  assert.deepEqual(starts, [true]);
+});
+
 test("clarification outcome is shown as a follow-up question", async () => {
   const elements = createElements();
   const controller = createQueryController({

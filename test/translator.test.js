@@ -39,6 +39,25 @@ test("translator passes actual date, timezone, metadata, and fixed model to Clau
   assert.deepEqual(result, { type: "query", request: validRequest });
 });
 
+test("translator is told not to add a hostname filter for the property's own domain", async () => {
+  const calls = [];
+  const call = async (options) => {
+    calls.push(options);
+    return JSON.stringify({ type: "query", request: validRequest });
+  };
+
+  await translateQuestion({
+    question: "How many visitors came to mvp.va.gov last month?",
+    metadata,
+    today: "2026-07-06",
+    apiKey: "key",
+    call
+  });
+
+  assert.match(calls[0].system, /already scoped to a single site/);
+  assert.match(calls[0].system, /hostName/);
+});
+
 test("an explicit UI-selected date range is passed through and Claude is told not to infer dates", async () => {
   const calls = [];
   const request = {

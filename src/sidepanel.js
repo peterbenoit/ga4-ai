@@ -143,6 +143,11 @@ const queryController = createQueryController({
     await historyStore.add({ question, request, answer });
     await historyController.refresh();
   },
+  onQuestionStart() {
+    lastQuestion = null;
+    saveReportButton.hidden = true;
+    saveReportButton.disabled = true;
+  },
   onResultReady(summary) {
     currentSummary = summary;
     exportPdfButton.disabled = false;

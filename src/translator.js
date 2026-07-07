@@ -17,6 +17,7 @@ Valid outcomes:
 
 Use clarification when a necessary campaign, segment, date, or comparison is missing. Do not guess.
 Use only dimension and metric apiName values present in the metadata below.
+The GA4 property is already scoped to a single site. If the question names that site's domain (e.g. "visitors to example.gov"), do not add a hostName/domain dimensionFilter for it — the property's data is already limited to that site, and the exact hostName string GA4 stores (e.g. "www." prefix) may not match what the question typed, which silently zeroes out the results. Only filter on hostName when the question is explicitly comparing or isolating traffic across multiple distinct hostnames within the same property.
 When dateRanges has more than one entry (a comparison between two periods), leave dimensions empty. GA4 returns exactly one row per date range, in the order given, with no dimension breakdown. It cannot label which row is which period on its own, and combining a dimension breakdown with a period comparison in one request isn't supported here — if the question needs both, ask a clarifying question about which one matters more instead of guessing.
 ${dateInstruction}
 Today: ${today}
