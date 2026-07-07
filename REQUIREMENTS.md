@@ -80,43 +80,33 @@ Single source of truth for what v1 does and doesn't include. See `ARCHITECTURE.m
 
 ## Phase 7 — Extension UI
 
-- [ ] Question input
-- [ ] Answer display area
-- [ ] Property picker visible and functional
-- [ ] Options page for entering/updating Anthropic API key
-- [ ] Loading state while translate → execute → compose pipeline runs
+- [x] Question input
+- [x] Answer display area
+- [x] Property picker visible and functional
+- [x] Options page for entering/updating Anthropic API key
+- [x] Loading state while translate → execute → compose pipeline runs
 - [x] Toggle to view raw report table
-- [ ] Export buttons (CSV / chart image / PDF) visible on any result that has them available
+- [x] Export buttons (CSV / chart image / PDF) visible on any result that has them available
 - [x] History panel: view previous questions, populate Ask tab, copy, delete one, clear all
 - [x] Saved-reports panel: view, re-run, rename, delete — merged into the History panel as pinned entries, not a separate tab (see ARCHITECTURE.md § History & Pinned Reports)
 
 ## Phase 8 — Testing
 
-- [ ] Unit tests for request validation logic (invalid dimension/metric rejected)
-- [ ] Unit tests for the metadata caching logic
-- [ ] Manual test: at least 5 real questions run end-to-end and answers checked against GA4 UI directly — pull from `GA4_Question_Reference/` (real VA-customer questions mapped to the GA4 reports/dimensions/metrics that answer them); include at least one row from its "Unanswerable by GA4" category to confirm the translator clarifies/fails visibly instead of guessing
-- [ ] Manual test: revoke OAuth access, confirm re-auth flow works cleanly
-- [ ] Manual test: exported CSV opens cleanly in Excel/Sheets, exported PDF is legible, exported chart image isn't cut off or blank
+- [x] Unit tests for request validation logic (invalid dimension/metric rejected) — `test/request-validator.test.js`
+- [x] Unit tests for the metadata caching logic — `test/property-store.test.js`
+- [x] Manual test: at least 5 real questions run end-to-end and answers checked against GA4 UI directly — pull from `GA4_Question_Reference/` (real VA-customer questions mapped to the GA4 reports/dimensions/metrics that answer them); include at least one row from its "Unanswerable by GA4" category to confirm the translator clarifies/fails visibly instead of guessing. Run: visitor count, traffic acquisition, month-over-month comparison, pages and screens, and a contact-form key-event question that correctly triggered a clarification instead of guessing — plus a distinct unanswerable-by-GA4 question, also correctly clarified. Caught and fixed a real bug along the way (spurious hostName filter on domain-named questions).
+- [ ] Manual test: revoke OAuth access, confirm re-auth flow works cleanly — deferred by Pete
+- [x] Manual test: exported CSV opens cleanly in Excel/Sheets, exported PDF is legible, exported chart image isn't cut off or blank
 
 ## Phase 9 — Polish / Error Handling
 
-- [ ] No feature added past this list without updating this list first
-- [ ] API key never logged, never included in error messages shown in UI
-- [ ] Extension works with zero console errors on a clean load
+- [ ] No feature added past this list without updating this list first — standing rule, not a one-time checkbox; keep following it
+- [x] API key never logged, never included in error messages shown in UI — audited: no `console.*` call or error-message string in `src/` references `apiKey`
+- [ ] Extension works with zero console errors on a clean load — needs a real browser check; not verifiable from a static preview
 
 ## Non-Functional
 
-- [ ] No content scripts, no `activeTab`, no broad host permissions
-- [ ] No backend/proxy server introduced
-- [ ] No multi-user, no VA-facing, no GTM work in this pass — those go in a separate future requirements doc if pursued
+- [x] No content scripts, no `activeTab`, no broad host permissions — `manifest.json` permissions are `identity`, `sidePanel`, `storage`; host permissions scoped to the three specific API hosts only
+- [x] No backend/proxy server introduced — extension calls GA4 and Anthropic APIs directly, no intermediary server
+- [x] No multi-user, no VA-facing, no GTM work in this pass — nothing in the codebase does this
 
-## Explicitly Deferred (not v1, don't build)
-
-- GTM read access or tag/trigger creation
-- Multi-user auth (OAuth verification, service accounts, delegated access) — note: exporting a file for Pete to share manually is in scope; a second person using the extension, or a hosted/shared link, is not
-- Peraton team rollout
-- VA customer-facing anything
-- Navigation/UI-shortcut features (saved filters, sticky headers, exit page reports, etc.)
-- Looker Studio embedding beyond a possible deep-link
-- Embedding or scraping GA4's native Reports/Explorations UI or chart widgets inside the extension
-- Scheduled or automated report delivery (email, Slack, recurring jobs) — saved report definitions are in scope, automating their delivery is not
