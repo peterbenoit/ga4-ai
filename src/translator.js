@@ -25,6 +25,26 @@ Dimensions: ${JSON.stringify(metadata.dimensions)}
 Metrics: ${JSON.stringify(metadata.metrics)}`;
 }
 
+function isEmptyFilterExpression(expression) {
+  return expression
+    && typeof expression === "object"
+    && !Array.isArray(expression)
+    && Object.keys(expression).length === 0;
+}
+
+function normalizeRequest(request) {
+  const normalized = { ...request };
+
+  if (isEmptyFilterExpression(normalized.dimensionFilter)) {
+    delete normalized.dimensionFilter;
+  }
+  if (isEmptyFilterExpression(normalized.metricFilter)) {
+    delete normalized.metricFilter;
+  }
+
+  return normalized;
+}
+
 function inspectOutcome(text, metadata) {
   let outcome;
 
@@ -41,6 +61,11 @@ function inspectOutcome(text, metadata) {
   if (outcome?.type !== "query" || !outcome.request || typeof outcome.request !== "object") {
     return { error: "Response must be a query or clarification outcome." };
   }
+
+  outcome = {
+    ...outcome,
+    request: normalizeRequest(outcome.request)
+  };
 
   const errors = validateReportRequest(outcome.request, metadata);
   return errors.length > 0

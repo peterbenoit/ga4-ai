@@ -65,6 +65,36 @@ test("an explicit UI-selected date range is passed through and Claude is told no
   assert.deepEqual(result, { type: "query", request });
 });
 
+test("translator strips empty filter expressions before returning the request", async () => {
+  const request = {
+    dimensions: [],
+    metrics: [{ name: "activeUsers" }],
+    dateRanges: [{ startDate: "2026-06-07", endDate: "2026-07-06" }],
+    dimensionFilter: {},
+    metricFilter: {},
+    limit: 100
+  };
+  const call = async () => JSON.stringify({ type: "query", request });
+
+  const result = await translateQuestion({
+    question: "How many active users did we have last 30 days?",
+    metadata,
+    today: "2026-07-06",
+    apiKey: "key",
+    call
+  });
+
+  assert.deepEqual(result, {
+    type: "query",
+    request: {
+      dimensions: [],
+      metrics: [{ name: "activeUsers" }],
+      dateRanges: [{ startDate: "2026-06-07", endDate: "2026-07-06" }],
+      limit: 100
+    }
+  });
+});
+
 test("translator returns a distinct clarification outcome", async () => {
   const call = async () => JSON.stringify({
     type: "clarification",
