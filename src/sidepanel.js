@@ -14,8 +14,6 @@ import { createPropertyStore } from "./property-store.js";
 import { createQueryController } from "./query-controller.js";
 import { createHistoryController } from "./history-controller.js";
 import { createHistoryStore } from "./history-store.js";
-import { createSavedReportController } from "./saved-report-controller.js";
-import { createSavedReportStore } from "./saved-report-store.js";
 import { downloadChartImage, downloadCsv, downloadPdfSummary } from "./report-export.js";
 import { renderReport as renderReportView } from "./report-renderer.js";
 import { createSettingsStore } from "./settings-store.js";
@@ -42,9 +40,9 @@ let currentChart = null;
 let currentReport = null;
 let currentSummary = null;
 let currentPropertyId = "";
-let lastQuestion = null;
+let lastHistoryEntry = null;
 const settingsStore = createSettingsStore();
-const saveReportButton = document.querySelector("#save-report");
+const pinReportButton = document.querySelector("#pin-report");
 const exportCsvButton = document.querySelector("#export-csv");
 const exportChartButton = document.querySelector("#export-chart");
 const exportPdfButton = document.querySelector("#export-pdf");
@@ -140,26 +138,28 @@ const queryController = createQueryController({
   answer: document.querySelector("#answer-output"),
   getDateRange: dateRangePicker.getRange,
   async onQuestionReady({ question, request, answer }) {
-    await historyStore.add({ question, request, answer });
+    lastHistoryEntry = await historyStore.add({ question, request, answer });
     await historyController.refresh();
   },
   onQuestionStart() {
-    lastQuestion = null;
-    saveReportButton.hidden = true;
-    saveReportButton.disabled = true;
+    lastHistoryEntry = null;
+    pinReportButton.hidden = true;
+    pinReportButton.disabled = true;
   },
   onResultReady(summary) {
     currentSummary = summary;
     exportPdfButton.disabled = false;
-    lastQuestion = { question: summary.question, request: summary.request };
-    saveReportButton.hidden = false;
-    saveReportButton.disabled = false;
+    if (lastHistoryEntry) {
+      pinReportButton.hidden = false;
+      pinReportButton.disabled = false;
+    }
   },
   openOptions() {
     return chrome.runtime.openOptionsPage();
   }
 });
 
+const historyStatus = document.querySelector("#history-status");
 const historyStore = createHistoryStore();
 const historyController = createHistoryController({
   store: historyStore,
@@ -169,10 +169,60 @@ const historyController = createHistoryController({
   onUseQuestion(question) {
     queryController.setQuestion(question);
     tabs.select("ask");
+  },
+  async onRerun(entry) {
+    if (!currentPropertyId) {
+      historyStatus.textContent = "Select a property before re-running a pinned report.";
+      return;
+    }
+
+    const dateRange = dateRangePicker.getRange();
+    const request = {
+      ...entry.request,
+      dateRanges: dateRange ? [dateRange] : entry.request.dateRanges
+    };
+
+    historyStatus.textContent = "Running pinned report…";
+    try {
+      const report = await runReportWithRetry({
+        propertyId: currentPropertyId,
+        request,
+        token: googleToken
+      });
+      renderReport(report);
+      tabs.select("report");
+      historyStatus.textContent = `Report returned ${report.rowCount} ${report.rowCount === 1 ? "row" : "rows"}.`;
+
+      const apiKey = await settingsStore.getAnthropicApiKey();
+      if (report.rowCount > 0 && apiKey) {
+        const composedAnswer = await composeAnswer({
+          question: entry.question,
+          report,
+          request,
+          apiKey
+        });
+        currentSummary = { question: entry.question, answer: composedAnswer, report, request };
+        exportPdfButton.disabled = false;
+      }
+    } catch (error) {
+      historyStatus.textContent = error instanceof Error ? error.message : String(error);
+    }
   }
 });
 
 void historyController.initialize();
+
+pinReportButton.addEventListener("click", async () => {
+  if (!lastHistoryEntry) {
+    return;
+  }
+  const name = window.prompt("Pin this report as", lastHistoryEntry.question);
+  if (name === null) {
+    return;
+  }
+  await historyStore.pin(lastHistoryEntry.id, name);
+  await historyController.refresh();
+});
 
 const propertySelect = document.querySelector("#property-select");
 const propertyChip = document.querySelector("#toolbar-property-chip");
@@ -214,67 +264,6 @@ const propertyController = createPropertyController({
     });
   }
 });
-
-saveReportButton.addEventListener("click", async () => {
-  if (!lastQuestion) {
-    return;
-  }
-  const name = window.prompt("Name this saved report", lastQuestion.question);
-  if (name === null) {
-    return;
-  }
-  await savedReportStore.add({ name, question: lastQuestion.question, request: lastQuestion.request });
-  await savedReportController.refresh();
-});
-
-const savedStatus = document.querySelector("#saved-status");
-const savedReportStore = createSavedReportStore();
-const savedReportController = createSavedReportController({
-  store: savedReportStore,
-  list: document.querySelector("#saved-list"),
-  empty: document.querySelector("#saved-empty"),
-  clearButton: document.querySelector("#clear-saved"),
-  async onRerun(entry) {
-    if (!currentPropertyId) {
-      savedStatus.textContent = "Select a property before re-running a saved report.";
-      return;
-    }
-
-    const dateRange = dateRangePicker.getRange();
-    const request = {
-      ...entry.request,
-      dateRanges: dateRange ? [dateRange] : entry.request.dateRanges
-    };
-
-    savedStatus.textContent = "Running saved report…";
-    try {
-      const report = await runReportWithRetry({
-        propertyId: currentPropertyId,
-        request,
-        token: googleToken
-      });
-      renderReport(report);
-      tabs.select("report");
-      savedStatus.textContent = `Report returned ${report.rowCount} ${report.rowCount === 1 ? "row" : "rows"}.`;
-
-      const apiKey = await settingsStore.getAnthropicApiKey();
-      if (report.rowCount > 0 && apiKey) {
-        const composedAnswer = await composeAnswer({
-          question: entry.question,
-          report,
-          request,
-          apiKey
-        });
-        currentSummary = { question: entry.question, answer: composedAnswer, report, request };
-        exportPdfButton.disabled = false;
-      }
-    } catch (error) {
-      savedStatus.textContent = error instanceof Error ? error.message : String(error);
-    }
-  }
-});
-
-void savedReportController.initialize();
 
 const controller = createAuthController({
   getAccessToken: getGoogleAccessToken,

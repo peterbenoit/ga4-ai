@@ -72,10 +72,10 @@ Single source of truth for what v1 does and doesn't include. See `ARCHITECTURE.m
 - [x] Chart image export (PNG via Chart.js's `toBase64Image()`)
 - [x] One-page PDF export combining the question, the answer, the chart (reusing the same PNG), and the data table
 - [x] Local question history: record completed questions and allow use, copy, delete one, or clear all
-- [ ] Named/saved report definitions: save a question (with its dimensions/metrics/filters) for re-running later
-- [ ] Saved reports can be re-run with a fresh date range without retyping the original question
-- [ ] Saved report list visible and manageable (rename, delete) in the UI
-- [ ] No scheduled/automated delivery of any kind — re-running is manual, triggered by Pete
+- [x] Named/saved report definitions: save a question (with its dimensions/metrics/filters) for re-running later — implemented as "pin" on a history entry rather than a separate saved-reports store; see ARCHITECTURE.md § History & Pinned Reports
+- [x] Saved reports can be re-run with a fresh date range without retyping the original question
+- [x] Saved report list visible and manageable (rename, delete) in the UI — pinned entries live in the same History panel, with Re-run/Rename/Unpin/Delete
+- [x] No scheduled/automated delivery of any kind — re-running is manual, triggered by Pete
 - [ ] Preset GA4 reports: deterministic Data API request templates for common GA4 UI-style reports, rendered locally rather than embedded from GA4
 
 ## Phase 7 — Extension UI
@@ -88,7 +88,7 @@ Single source of truth for what v1 does and doesn't include. See `ARCHITECTURE.m
 - [x] Toggle to view raw report table
 - [ ] Export buttons (CSV / chart image / PDF) visible on any result that has them available
 - [x] History panel: view previous questions, populate Ask tab, copy, delete one, clear all
-- [ ] Saved-reports panel: view, re-run, rename, delete
+- [x] Saved-reports panel: view, re-run, rename, delete — merged into the History panel as pinned entries, not a separate tab (see ARCHITECTURE.md § History & Pinned Reports)
 
 ## Phase 8 — Testing
 

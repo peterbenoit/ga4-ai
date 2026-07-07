@@ -160,6 +160,12 @@ This is scoped for one person, one Google identity, running locally. It is not a
 - `effort` parameter left at API default (`high`) unless a real accuracy or latency problem is observed.
 - Opus 4.8 / Fable 5 intentionally not used — both steps here are bounded, well-defined tasks, not the open-ended multi-step reasoning those tiers are for.
 
+## History & Pinned Reports
+
+- One store (`history-store.js`), not two. Every completed question is appended to `queryHistory` automatically. Originally this shipped alongside a separate `saved-report-store.js`, but that duplicated the same list/rename/delete UI with no visible reason for it to be a second store — the only real distinction (re-run replays the exact saved `request`, skipping a second LLM translate call, vs. History's "Use" which just refills the question box for retranslation) was invisible in the UI. Collapsed into one: pinning a history entry (📌, with a required name) is what "saving a report" means, and Re-run only appears on pinned entries.
+- Pinned entries are excluded from the 50-entry unpinned cap so they persist indefinitely until explicitly deleted or unpinned.
+- Re-run takes the pinned entry's stored `request`, overrides `dateRanges` with whatever's currently selected in the date picker, and re-executes directly against the GA4 Data API — no re-translation. If the original request had a two-period comparison (`dateRanges` with 2 entries), re-run collapses it to a single fresh range; re-running a comparison report with new relative dates isn't supported.
+
 ## Storage (chrome.storage.local schema, draft)
 
 ```js
@@ -169,11 +175,14 @@ This is scoped for one person, one Google identity, running locally. It is not a
   propertyMetadataCache: {
     [propertyId]: { dimensions: [...], metrics: [...], fetchedAt: timestamp }
   },
-  queryHistory: [ { question, request, answer, timestamp } ],  // optional, local only
-  savedReports: [
-    { name, question, requestTemplate, lastRunAt, lastAnswer }
-    // requestTemplate stores the dimensions/metrics/filters; date range is
-    // re-supplied (or relative, e.g. "last 30 days") each time it's re-run
+  queryHistory: [
+    { id, question, request, answer, timestamp, pinned, name }
+    // A single append-only log, capped at 50 unpinned entries. Pinning an
+    // entry (name required) exempts it from the cap and gives it a Re-run
+    // action that replays `request` verbatim with a fresh date range,
+    // skipping re-translation. There is no separate saved-reports store —
+    // "save a report" is just "pin a history entry." See History &
+    // Pinned Reports below.
   ]
 }
 ```
@@ -198,7 +207,7 @@ This is scoped for one person, one Google identity, running locally. It is not a
 - Whether GA4 metadata should be refetched per session or cached longer (dimensions/metrics rarely change)
 - Whether query history is worth persisting at all in v1, or just noise
 - PDF export library choice (client-side, e.g. jsPDF or similar) — pick during Phase 6 implementation, not before
-- GA4 Data API quota ceiling — not expected to be a real constraint at single-user usage levels, but worth a quick check of current limits before Phase 6 saved-report re-run testing
+- GA4 Data API quota ceiling — not expected to be a real constraint at single-user usage levels, but worth a quick check of current limits before Phase 6 pinned-report re-run testing
 
 ## Resolved
 

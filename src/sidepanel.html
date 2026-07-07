@@ -1,195 +1,203 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>GA4 Query Assistant</title>
-    <link rel="stylesheet" href="vendor/flatpickr/flatpickr.min.css">
-    <link rel="stylesheet" href="sidepanel.css">
-    <script src="vendor/chartjs/chart.umd.min.js"></script>
-    <script src="vendor/jspdf/jspdf.umd.min.js"></script>
-    <script type="module" src="sidepanel.js"></script>
-  </head>
-  <body>
-    <header class="titlebar">
-      <span class="titlebar__mark" aria-hidden="true">GA</span>
-      <span class="titlebar__name">GA4 Query Assistant</span>
-    </header>
 
-    <div class="statusbar">
-      <p class="statusbar__text" id="auth-status" role="status">Checking Google Analytics connection…</p>
-      <button class="btn btn--primary btn--sm" id="connect-google" type="button" hidden>Connect Google Analytics</button>
-    </div>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>GA4 Query Assistant</title>
+	<link rel="stylesheet" href="vendor/flatpickr/flatpickr.min.css">
+	<link rel="stylesheet" href="sidepanel.css">
+	<script src="vendor/chartjs/chart.umd.min.js"></script>
+	<script src="vendor/jspdf/jspdf.umd.min.js"></script>
+	<script type="module" src="sidepanel.js"></script>
+</head>
 
-    <nav class="tabs" role="tablist" aria-label="Panels">
-      <button class="tab is-active" type="button" role="tab" data-tab="ask" id="tab-ask" aria-controls="panel-ask" aria-selected="true">
-        <span class="tab__icon" aria-hidden="true">💬</span>
-        <span class="tab__label">Ask</span>
-      </button>
-      <button class="tab" type="button" role="tab" data-tab="property" id="tab-property" aria-controls="panel-property" aria-selected="false">
-        <span class="tab__icon" aria-hidden="true">🏷️</span>
-        <span class="tab__label">Property</span>
-      </button>
-      <button class="tab" type="button" role="tab" data-tab="report" id="tab-report" aria-controls="panel-report" aria-selected="false">
-        <span class="tab__icon" aria-hidden="true">📊</span>
-        <span class="tab__label">Report</span>
-      </button>
-      <button class="tab" type="button" role="tab" data-tab="history" id="tab-history" aria-controls="panel-history" aria-selected="false">
-        <span class="tab__icon" aria-hidden="true">🕘</span>
-        <span class="tab__label">History</span>
-      </button>
-      <button class="tab" type="button" role="tab" data-tab="saved" id="tab-saved" aria-controls="panel-saved" aria-selected="false">
-        <span class="tab__icon" aria-hidden="true">🔖</span>
-        <span class="tab__label">Saved</span>
-      </button>
-    </nav>
+<body>
+	<header class="titlebar">
+		<span class="titlebar__mark" aria-hidden="true">GA</span>
+		<span class="titlebar__name">GA4 Query Assistant</span>
+	</header>
 
-    <div class="toolbar">
-      <span class="chip" id="toolbar-property-chip">Property: none selected</span>
-      <div class="toolbar__actions">
-        <button class="btn btn--ghost btn--sm" id="refresh-metadata" type="button" hidden>↻ Refresh metadata</button>
-        <button class="btn btn--ghost btn--sm" id="open-settings" type="button" hidden>⚙ Settings</button>
-      </div>
-    </div>
+	<div class="statusbar">
+		<p class="statusbar__text" id="auth-status" role="status">Checking Google Analytics connection…</p>
+		<button class="btn btn--primary btn--sm" id="connect-google" type="button" hidden>Connect Google
+			Analytics</button>
+	</div>
 
-    <main class="tabpanels">
+	<nav class="tabs" role="tablist" aria-label="Panels">
+		<button class="tab is-active" type="button" role="tab" data-tab="ask" id="tab-ask" aria-controls="panel-ask"
+			aria-selected="true">
+			<span class="tab__icon" aria-hidden="true">💬</span>
+			<span class="tab__label">Ask</span>
+		</button>
+		<button class="tab" type="button" role="tab" data-tab="property" id="tab-property"
+			aria-controls="panel-property" aria-selected="false">
+			<span class="tab__icon" aria-hidden="true">🏷️</span>
+			<span class="tab__label">Property</span>
+		</button>
+		<button class="tab" type="button" role="tab" data-tab="report" id="tab-report" aria-controls="panel-report"
+			aria-selected="false">
+			<span class="tab__icon" aria-hidden="true">📊</span>
+			<span class="tab__label">Report</span>
+		</button>
+		<button class="tab" type="button" role="tab" data-tab="history" id="tab-history" aria-controls="panel-history"
+			aria-selected="false">
+			<span class="tab__icon" aria-hidden="true">🕘</span>
+			<span class="tab__label">History</span>
+		</button>
+	</nav>
 
-      <section class="tabpanel is-active" id="panel-ask" data-tabpanel="ask" role="tabpanel" aria-labelledby="tab-ask">
-        <p class="section-title">Question</p>
-        <form id="question-form" class="query-form">
-          <div class="field">
-            <label class="field__label" for="date-preset">Date range</label>
-            <select class="field__control" id="date-preset">
-              <option value="">Let the question decide</option>
-              <option value="last7">Last 7 days</option>
-              <option value="last30">Last 30 days</option>
-              <option value="last90">Last 90 days</option>
-              <option value="thisMonth">This month</option>
-              <option value="lastMonth">Last month</option>
-              <option value="custom">Custom range</option>
-            </select>
-          </div>
-          <div class="date-range-fields" id="date-range-custom" hidden>
-            <div class="date-input">
-              <label class="field__label" for="date-start">Start</label>
-              <div class="date-input__control">
-                <span class="date-input__icon" aria-hidden="true">📅</span>
-                <input class="field__control" id="date-start" type="text" placeholder="Select a date" readonly>
-              </div>
-            </div>
-            <div class="date-input">
-              <label class="field__label" for="date-end">End</label>
-              <div class="date-input__control">
-                <span class="date-input__icon" aria-hidden="true">📅</span>
-                <input class="field__control" id="date-end" type="text" placeholder="Select a date" readonly>
-              </div>
-            </div>
-          </div>
-          <div class="field">
-            <label class="field__label" for="question">What do you want to know?</label>
-            <textarea class="field__control field__control--textarea" id="question" rows="4" placeholder="e.g. Did the spring campaign move organic traffic?" disabled></textarea>
-          </div>
-          <button class="btn btn--primary" id="translate-question" type="submit" disabled>Build GA4 request</button>
-        </form>
-        <p class="status-line" id="translation-status" role="status">Load property metadata to ask a question.</p>
-        <p class="answer-block" id="answer-output" hidden></p>
-        <button class="btn btn--ghost btn--sm" id="save-report" type="button" disabled hidden>🔖 Save this report</button>
-        <details class="request-details">
-          <summary>GA4 request sent</summary>
-          <pre class="output-block" id="translation-output" hidden></pre>
-        </details>
-      </section>
+	<div class="toolbar">
+		<span class="chip" id="toolbar-property-chip">Property: none selected</span>
+		<div class="toolbar__actions">
+			<button class="btn btn--ghost btn--sm" id="refresh-metadata" type="button" hidden>↻ Refresh
+				metadata</button>
+			<button class="btn btn--ghost btn--sm" id="open-settings" type="button" hidden>⚙ Settings</button>
+		</div>
+	</div>
 
-      <section class="tabpanel" id="panel-property" data-tabpanel="property" hidden role="tabpanel" aria-labelledby="tab-property">
-        <p class="section-title">GA4 Property</p>
-        <div class="field">
-          <label class="field__label" for="property-select">Property</label>
-          <select id="property-select" class="field__control" disabled>
-            <option disabled selected>Connect Google Analytics to load properties</option>
-          </select>
-        </div>
-        <p class="status-line" id="metadata-status" role="status">Property metadata has not been loaded.</p>
+	<main class="tabpanels">
 
-        <p class="section-title">Metadata</p>
-        <div class="stat-grid">
-          <div class="stat-card">
-            <p class="stat-card__value" id="stat-dimensions">—</p>
-            <p class="stat-card__label">Dimensions</p>
-          </div>
-          <div class="stat-card">
-            <p class="stat-card__value" id="stat-metrics">—</p>
-            <p class="stat-card__label">Metrics</p>
-          </div>
-        </div>
-        <dl class="kv-list">
-          <div class="kv-row">
-            <dt class="kv-label">Reporting timezone</dt>
-            <dd class="kv-value" id="kv-timezone">—</dd>
-          </div>
-          <div class="kv-row">
-            <dt class="kv-label">Last fetched</dt>
-            <dd class="kv-value" id="kv-fetched-at">—</dd>
-          </div>
-        </dl>
-      </section>
+		<section class="tabpanel is-active" id="panel-ask" data-tabpanel="ask" role="tabpanel"
+			aria-labelledby="tab-ask">
+			<p class="section-title">Question</p>
+			<form id="question-form" class="query-form">
+				<div class="field">
+					<label class="field__label" for="date-preset">Date range</label>
+					<select class="field__control" id="date-preset">
+						<option value="">Let the question decide</option>
+						<option value="last7">Last 7 days</option>
+						<option value="last30">Last 30 days</option>
+						<option value="last90">Last 90 days</option>
+						<option value="thisMonth">This month</option>
+						<option value="lastMonth">Last month</option>
+						<option value="custom">Custom range</option>
+					</select>
+				</div>
+				<div class="date-range-fields" id="date-range-custom" hidden>
+					<div class="date-input">
+						<label class="field__label" for="date-start">Start</label>
+						<div class="date-input__control">
+							<span class="date-input__icon" aria-hidden="true">📅</span>
+							<input class="field__control" id="date-start" type="text" placeholder="Select a date"
+								readonly>
+						</div>
+					</div>
+					<div class="date-input">
+						<label class="field__label" for="date-end">End</label>
+						<div class="date-input__control">
+							<span class="date-input__icon" aria-hidden="true">📅</span>
+							<input class="field__control" id="date-end" type="text" placeholder="Select a date"
+								readonly>
+						</div>
+					</div>
+				</div>
+				<div class="field">
+					<label class="field__label" for="question">What do you want to know?</label>
+					<textarea class="field__control field__control--textarea" id="question" rows="4"
+						placeholder="e.g. Did the spring campaign move organic traffic?" disabled></textarea>
+				</div>
+				<button class="btn btn--primary" id="translate-question" type="submit" disabled>Build GA4
+					request</button>
+			</form>
+			<p class="status-line" id="translation-status" role="status">Load property metadata to ask a question.</p>
+			<p class="answer-block" id="answer-output" hidden></p>
+			<button class="btn btn--ghost btn--sm" id="pin-report" type="button" disabled hidden>📌 Pin this
+				report</button>
+			<details class="request-details">
+				<summary>GA4 request sent</summary>
+				<pre class="output-block" id="translation-output" hidden></pre>
+			</details>
+		</section>
 
-      <section class="tabpanel" id="panel-report" data-tabpanel="report" hidden role="tabpanel" aria-labelledby="tab-report">
-        <p class="section-title">Report Summary</p>
-        <div class="stat-grid">
-          <div class="stat-card">
-            <p class="stat-card__value">0</p>
-            <p class="stat-card__label">Rows</p>
-          </div>
-          <div class="stat-card">
-            <p class="stat-card__value">0</p>
-            <p class="stat-card__label">Columns</p>
-          </div>
-        </div>
+		<section class="tabpanel" id="panel-property" data-tabpanel="property" hidden role="tabpanel"
+			aria-labelledby="tab-property">
+			<p class="section-title">GA4 Property</p>
+			<div class="field">
+				<label class="field__label" for="property-select">Property</label>
+				<select id="property-select" class="field__control" disabled>
+					<option disabled selected>Connect Google Analytics to load properties</option>
+				</select>
+			</div>
+			<p class="status-line" id="metadata-status" role="status">Property metadata has not been loaded.</p>
 
-        <p class="section-title">Chart</p>
-        <div class="chart-frame">
-          <canvas id="report-chart" hidden></canvas>
-          <p class="placeholder-note" id="report-chart-note">Run a chartable report to see a chart here.</p>
-        </div>
+			<p class="section-title">Metadata</p>
+			<div class="stat-grid">
+				<div class="stat-card">
+					<p class="stat-card__value" id="stat-dimensions">—</p>
+					<p class="stat-card__label">Dimensions</p>
+				</div>
+				<div class="stat-card">
+					<p class="stat-card__value" id="stat-metrics">—</p>
+					<p class="stat-card__label">Metrics</p>
+				</div>
+			</div>
+			<dl class="kv-list">
+				<div class="kv-row">
+					<dt class="kv-label">Reporting timezone</dt>
+					<dd class="kv-value" id="kv-timezone">—</dd>
+				</div>
+				<div class="kv-row">
+					<dt class="kv-label">Last fetched</dt>
+					<dd class="kv-value" id="kv-fetched-at">—</dd>
+				</div>
+			</dl>
+		</section>
 
-        <div class="section-heading">
-          <p class="section-title">Data</p>
-          <button class="btn btn--ghost btn--sm" id="toggle-raw-table" type="button" disabled>Show raw table</button>
-        </div>
-        <div class="table-scroll">
-          <table class="data-table" id="report-table" hidden>
-            <caption>GA4 report data</caption>
-          </table>
-        </div>
-        <p class="placeholder-note">Run a question from the Ask tab to see results here.</p>
+		<section class="tabpanel" id="panel-report" data-tabpanel="report" hidden role="tabpanel"
+			aria-labelledby="tab-report">
+			<p class="section-title">Report Summary</p>
+			<div class="stat-grid">
+				<div class="stat-card">
+					<p class="stat-card__value">0</p>
+					<p class="stat-card__label">Rows</p>
+				</div>
+				<div class="stat-card">
+					<p class="stat-card__value">0</p>
+					<p class="stat-card__label">Columns</p>
+				</div>
+			</div>
 
-        <p class="section-title">Export <span class="section-title__tag">Phase 6</span></p>
-        <div class="export-row">
-          <button class="btn btn--ghost btn--sm" id="export-csv" type="button" disabled>⬇ CSV</button>
-          <button class="btn btn--ghost btn--sm" id="export-chart" type="button" disabled>⬇ Chart PNG</button>
-          <button class="btn btn--ghost btn--sm" id="export-pdf" type="button" disabled>⬇ PDF summary</button>
-        </div>
-      </section>
+			<p class="section-title">Chart</p>
+			<div class="chart-frame">
+				<canvas id="report-chart" hidden></canvas>
+				<p class="placeholder-note" id="report-chart-note">Run a chartable report to see a chart here.</p>
+			</div>
 
-      <section class="tabpanel" id="panel-history" data-tabpanel="history" hidden role="tabpanel" aria-labelledby="tab-history">
-        <div class="section-heading">
-          <p class="section-title">History</p>
-          <button class="btn btn--ghost btn--sm" id="clear-history" type="button" disabled>Clear</button>
-        </div>
-        <p class="placeholder-note" id="history-empty">No questions asked yet.</p>
-        <ul class="history-list" id="history-list"></ul>
-      </section>
+			<div class="section-heading">
+				<p class="section-title">Data</p>
+				<button class="btn btn--ghost btn--sm" id="toggle-raw-table" type="button" disabled>Show raw
+					table</button>
+			</div>
+			<div class="table-scroll">
+				<table class="data-table" id="report-table" hidden>
+					<caption>GA4 report data</caption>
+				</table>
+			</div>
+			<p class="placeholder-note">Run a question from the Ask tab to see results here.</p>
 
-      <section class="tabpanel" id="panel-saved" data-tabpanel="saved" hidden role="tabpanel" aria-labelledby="tab-saved">
-        <div class="section-heading">
-          <p class="section-title">Saved Reports</p>
-          <button class="btn btn--ghost btn--sm" id="clear-saved" type="button" disabled>Clear</button>
-        </div>
-        <p class="status-line" id="saved-status" role="status"></p>
-        <p class="placeholder-note" id="saved-empty">No saved reports yet. Run a question from the Ask tab, then use "Save this report" to add it here.</p>
-        <ul class="history-list" id="saved-list"></ul>
-      </section>
+			<p class="section-title">Export <span class="section-title__tag">Phase 6</span></p>
+			<div class="export-row">
+				<button class="btn btn--ghost btn--sm" id="export-csv" type="button" disabled>⬇ CSV</button>
+				<button class="btn btn--ghost btn--sm" id="export-chart" type="button" disabled>⬇ Chart PNG</button>
+				<button class="btn btn--ghost btn--sm" id="export-pdf" type="button" disabled>⬇ PDF summary</button>
+			</div>
+		</section>
 
-    </main>
-  </body>
+		<section class="tabpanel" id="panel-history" data-tabpanel="history" hidden role="tabpanel"
+			aria-labelledby="tab-history">
+			<div class="section-heading">
+				<p class="section-title">History</p>
+				<button class="btn btn--ghost btn--sm" id="clear-history" type="button" disabled>Clear</button>
+			</div>
+			<p class="placeholder-note">Pinned reports (📌) re-run instantly with a fresh date range, no need to Ask
+				again. Everything is stored in your History tab, use it Ask questions again.</p>
+			<p class="status-line" id="history-status" role="status"></p>
+			<p class="placeholder-note" id="history-empty">No questions asked yet.</p>
+			<ul class="history-list" id="history-list"></ul>
+		</section>
+
+	</main>
+</body>
+
 </html>

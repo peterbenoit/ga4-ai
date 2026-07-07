@@ -24,8 +24,10 @@ export function createHistoryController({
   empty,
   clearButton,
   documentRef = document,
+  windowRef = globalThis.window,
   clipboard = navigator.clipboard,
-  onUseQuestion = () => {}
+  onUseQuestion = () => {},
+  onRerun = () => {}
 }) {
   async function render() {
     const entries = await store.list();
@@ -33,19 +35,28 @@ export function createHistoryController({
     empty.hidden = entries.length > 0;
     clearButton.disabled = entries.length === 0;
 
-    for (const entry of entries) {
+    const pinned = entries.filter((entry) => entry.pinned);
+    const recent = entries.filter((entry) => !entry.pinned);
+
+    for (const entry of [...pinned, ...recent]) {
       const item = documentRef.createElement("li");
       item.className = "history-item";
 
       const body = documentRef.createElement("div");
       body.className = "history-item__body";
 
-      const question = documentRef.createElement("p");
-      question.className = "history-item__question";
-      question.textContent = entry.question;
+      const title = documentRef.createElement("p");
+      title.className = "history-item__question";
+      title.textContent = entry.pinned ? `📌 ${entry.name}` : entry.question;
 
-      const children = [question];
-      if (entry.answer) {
+      const children = [title];
+
+      if (entry.pinned) {
+        const question = documentRef.createElement("p");
+        question.className = "history-item__answer";
+        question.textContent = entry.question;
+        children.push(question);
+      } else if (entry.answer) {
         const answer = documentRef.createElement("p");
         answer.className = "history-item__answer";
         answer.textContent = entry.answer;
@@ -61,30 +72,84 @@ export function createHistoryController({
 
       const actions = documentRef.createElement("div");
       actions.className = "history-item__actions";
-      actions.append(
-        button({
-          documentRef,
-          text: "Use",
-          onClick() {
-            onUseQuestion(entry.question);
-          }
-        }),
-        button({
-          documentRef,
-          text: "Copy",
-          onClick() {
-            return clipboard.writeText(entry.question);
-          }
-        }),
-        button({
-          documentRef,
-          text: "Delete",
-          onClick: async () => {
-            await store.delete(entry.id);
-            await render();
-          }
-        })
-      );
+
+      if (entry.pinned) {
+        actions.append(
+          button({
+            documentRef,
+            text: "Re-run",
+            className: "btn btn--primary btn--sm",
+            onClick() {
+              onRerun(entry);
+            }
+          }),
+          button({
+            documentRef,
+            text: "Rename",
+            onClick: async () => {
+              const nextName = windowRef.prompt("Rename pinned report", entry.name);
+              if (nextName === null) {
+                return;
+              }
+              await store.rename(entry.id, nextName);
+              await render();
+            }
+          }),
+          button({
+            documentRef,
+            text: "Unpin",
+            onClick: async () => {
+              await store.unpin(entry.id);
+              await render();
+            }
+          }),
+          button({
+            documentRef,
+            text: "Delete",
+            onClick: async () => {
+              await store.delete(entry.id);
+              await render();
+            }
+          })
+        );
+      } else {
+        actions.append(
+          button({
+            documentRef,
+            text: "Use",
+            onClick() {
+              onUseQuestion(entry.question);
+            }
+          }),
+          button({
+            documentRef,
+            text: "Pin",
+            onClick: async () => {
+              const name = windowRef.prompt("Pin this report as", entry.question);
+              if (name === null) {
+                return;
+              }
+              await store.pin(entry.id, name);
+              await render();
+            }
+          }),
+          button({
+            documentRef,
+            text: "Copy",
+            onClick() {
+              return clipboard.writeText(entry.question);
+            }
+          }),
+          button({
+            documentRef,
+            text: "Delete",
+            onClick: async () => {
+              await store.delete(entry.id);
+              await render();
+            }
+          })
+        );
+      }
 
       item.append(body, actions);
       list.append(item);

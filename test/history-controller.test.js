@@ -42,7 +42,7 @@ test("history controller renders entries and can populate the Ask tab", async ()
   const controller = createHistoryController({
     store: {
       async list() {
-        return [{ id: "1", question: "Users by country", timestamp: Date.UTC(2026, 6, 7) }];
+        return [{ id: "1", question: "Users by country", timestamp: Date.UTC(2026, 6, 7), pinned: false }];
       }
     },
     list,
@@ -74,7 +74,8 @@ test("history controller renders saved answers when present", async () => {
           id: "1",
           question: "Users by country",
           answer: "The United States had the most active users.",
-          timestamp: Date.UTC(2026, 6, 7)
+          timestamp: Date.UTC(2026, 6, 7),
+          pinned: false
         }];
       }
     },
@@ -97,7 +98,7 @@ test("history controller copies a question to the clipboard", async () => {
   const controller = createHistoryController({
     store: {
       async list() {
-        return [{ id: "1", question: "How many users?", timestamp: 1 }];
+        return [{ id: "1", question: "How many users?", timestamp: 1, pinned: false }];
       }
     },
     list: createElement(),
@@ -112,7 +113,7 @@ test("history controller copies a question to the clipboard", async () => {
   });
 
   await controller.initialize();
-  await controller.elements.list.children[0].children[1].children[1].click();
+  await controller.elements.list.children[0].children[1].children[2].click();
 
   assert.deepEqual(copied, ["How many users?"]);
 });
@@ -120,8 +121,8 @@ test("history controller copies a question to the clipboard", async () => {
 test("history controller deletes one entry or clears all entries", async () => {
   const deleted = [];
   let entries = [
-    { id: "1", question: "A", timestamp: 1 },
-    { id: "2", question: "B", timestamp: 2 }
+    { id: "1", question: "A", timestamp: 1, pinned: false },
+    { id: "2", question: "B", timestamp: 2, pinned: false }
   ];
   const clearButton = createElement("button");
   const controller = createHistoryController({
@@ -144,7 +145,7 @@ test("history controller deletes one entry or clears all entries", async () => {
   });
 
   await controller.initialize();
-  await controller.elements.list.children[0].children[1].children[2].click();
+  await controller.elements.list.children[0].children[1].children[3].click();
 
   assert.deepEqual(deleted, ["1"]);
   assert.equal(controller.elements.list.children.length, 1);
@@ -154,4 +155,94 @@ test("history controller deletes one entry or clears all entries", async () => {
   assert.equal(controller.elements.list.children.length, 0);
   assert.equal(controller.elements.empty.hidden, false);
   assert.equal(clearButton.disabled, true);
+});
+
+test("history controller pins an entry with a chosen name", async () => {
+  let entries = [{ id: "1", question: "Users by country", request: {}, timestamp: 1, pinned: false }];
+  const list = createElement();
+  const controller = createHistoryController({
+    store: {
+      async list() {
+        return entries;
+      },
+      async pin(id, name) {
+        entries = entries.map((entry) => (entry.id === id ? { ...entry, pinned: true, name } : entry));
+      }
+    },
+    list,
+    empty: createElement(),
+    clearButton: createElement("button"),
+    documentRef: createDocument(),
+    windowRef: { prompt: () => "Monthly geo report" }
+  });
+
+  await controller.initialize();
+  await list.children[0].children[1].children[1].click();
+
+  assert.equal(entries[0].pinned, true);
+  assert.equal(entries[0].name, "Monthly geo report");
+});
+
+test("pinned entries render with re-run, rename, unpin, and delete actions", async () => {
+  let entries = [{
+    id: "1",
+    name: "Monthly geo report",
+    question: "Users by country",
+    request: { metrics: [{ name: "activeUsers" }] },
+    timestamp: 1,
+    pinned: true
+  }];
+  const list = createElement();
+  const rerun = [];
+  const controller = createHistoryController({
+    store: {
+      async list() {
+        return entries;
+      },
+      async unpin(id) {
+        entries = entries.map((entry) => (entry.id === id ? { ...entry, pinned: false, name: null } : entry));
+      }
+    },
+    list,
+    empty: createElement(),
+    clearButton: createElement("button"),
+    documentRef: createDocument(),
+    onRerun(entry) {
+      rerun.push(entry.id);
+    }
+  });
+
+  await controller.initialize();
+  const item = list.children[0];
+  assert.equal(item.children[0].children[0].textContent, "📌 Monthly geo report");
+  assert.equal(item.children[0].children[1].textContent, "Users by country");
+
+  await item.children[1].children[0].click();
+  assert.deepEqual(rerun, ["1"]);
+
+  await item.children[1].children[2].click();
+  assert.equal(entries[0].pinned, false);
+});
+
+test("pinned entries sort before recent entries", async () => {
+  const list = createElement();
+  const controller = createHistoryController({
+    store: {
+      async list() {
+        return [
+          { id: "recent", question: "Recent question", timestamp: 2, pinned: false },
+          { id: "pinned", name: "Pinned report", question: "Pinned question", timestamp: 1, pinned: true }
+        ];
+      }
+    },
+    list,
+    empty: createElement(),
+    clearButton: createElement("button"),
+    documentRef: createDocument()
+  });
+
+  await controller.initialize();
+
+  assert.equal(list.children[0].children[0].children[0].textContent, "📌 Pinned report");
+  assert.equal(list.children[1].children[0].children[0].textContent, "Recent question");
 });

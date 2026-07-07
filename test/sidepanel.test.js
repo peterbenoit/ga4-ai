@@ -82,3 +82,15 @@ test("side panel wires metadata into the query controller", async () => {
   assert.match(script, /tabs\.select\("ask"\)/);
   assert.match(script, /openOptionsPage/);
 });
+
+test("side panel wires pin-and-rerun into the history controller", async () => {
+  const html = await readFile(new URL("src/sidepanel.html", rootUrl), "utf8");
+  const script = await readFile(new URL("src/sidepanel.js", rootUrl), "utf8");
+
+  assert.match(html, /id="pin-report"[^>]*disabled/);
+  assert.doesNotMatch(html, /id="tab-saved"/);
+  assert.doesNotMatch(html, /id="panel-saved"/);
+  assert.match(script, /pinReportButton\.addEventListener\("click"/);
+  assert.match(script, /historyStore\.pin\(/);
+  assert.match(script, /onRerun\(entry\)/);
+});
