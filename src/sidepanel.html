@@ -50,6 +50,7 @@
 	<div class="toolbar">
 		<span class="chip" id="toolbar-property-chip">Property: none selected</span>
 		<div class="toolbar__actions">
+			<button class="btn btn--ghost btn--sm" id="panel-help" type="button">❓ What is this?</button>
 			<button class="btn btn--ghost btn--sm" id="refresh-metadata" type="button" hidden>↻ Refresh
 				metadata</button>
 			<button class="btn btn--ghost btn--sm" id="open-settings" type="button" hidden>⚙ Settings</button>
@@ -202,6 +203,12 @@
 		</section>
 
 	</main>
+
+	<dialog id="help-dialog">
+		<h2 id="help-dialog-title"></h2>
+		<div id="help-dialog-body"></div>
+		<button class="btn btn--primary btn--sm" id="help-dialog-close" type="button">Close</button>
+	</dialog>
 </body>
 
 </html>

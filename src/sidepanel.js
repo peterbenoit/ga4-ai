@@ -12,6 +12,8 @@ import {
   runRealtimeReport
 } from "./ga4-client.js";
 import { runFunnelReport } from "./funnel-report.js";
+import { createHelpController } from "./help-controller.js";
+import { HELP_CONTENT } from "./help-content.js";
 import { createPresetController } from "./preset-controller.js";
 import { PRESETS } from "./presets.js";
 import { createPropertyController } from "./property-controller.js";
@@ -38,9 +40,24 @@ const runRealtimeReportWithRetry = withAuthRetry(runRealtimeReport, refreshGoogl
 const fetchPropertyMetadataWithRetry = withAuthRetry(fetchPropertyMetadata, refreshGoogleToken);
 const listAccessiblePropertiesWithRetry = withAuthRetry(listAccessibleProperties, refreshGoogleToken);
 
+let currentTabId = "ask";
+
 const tabs = initTabs({
   tabButtons: Array.from(document.querySelectorAll(".tab")),
-  panels: Array.from(document.querySelectorAll(".tabpanel"))
+  panels: Array.from(document.querySelectorAll(".tabpanel")),
+  onSelect(tabId) {
+    currentTabId = tabId;
+  }
+});
+
+createHelpController({
+  button: document.querySelector("#panel-help"),
+  dialog: document.querySelector("#help-dialog"),
+  titleEl: document.querySelector("#help-dialog-title"),
+  bodyEl: document.querySelector("#help-dialog-body"),
+  closeButton: document.querySelector("#help-dialog-close"),
+  content: HELP_CONTENT,
+  getActiveTabId: () => currentTabId
 });
 
 let currentChart = null;
