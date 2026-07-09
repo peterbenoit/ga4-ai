@@ -16,12 +16,14 @@ import { createHelpController } from "./help-controller.js";
 import { HELP_CONTENT } from "./help-content.js";
 import { createPresetController } from "./preset-controller.js";
 import { PRESETS } from "./presets.js";
+import { REPORT_TEMPLATES } from "./templates.js";
+import { runTemplateReport } from "./template-runner.js";
 import { createPropertyController } from "./property-controller.js";
 import { createPropertyStore } from "./property-store.js";
 import { createQueryController, todayInTimeZone } from "./query-controller.js";
 import { createHistoryController } from "./history-controller.js";
 import { createHistoryStore } from "./history-store.js";
-import { downloadChartImage, downloadCsv, downloadPdfSummary } from "./report-export.js";
+import { downloadChartImage, downloadCsv, downloadMultiSectionPdf, downloadPdfSummary } from "./report-export.js";
 import { renderReport as renderReportView } from "./report-renderer.js";
 import { validateReportRequest } from "./request-validator.js";
 import { createSettingsStore } from "./settings-store.js";
@@ -326,6 +328,48 @@ createPresetController({
   presets: PRESETS,
   container: document.querySelector("#preset-list"),
   onRun: runPreset
+});
+
+const templateStatus = document.querySelector("#template-status");
+
+async function runTemplate(template) {
+  if (!currentPropertyId || !currentMetadata) {
+    templateStatus.textContent = "Select a property and load its metadata first.";
+    return;
+  }
+
+  const dateRange = dateRangePicker.getRange()
+    ?? resolvePresetRange("last30", todayInTimeZone(new Date(), currentMetadata.timeZone));
+
+  templateStatus.textContent = `Running ${template.label}…`;
+  try {
+    const sections = await runTemplateReport({
+      template,
+      presets: PRESETS,
+      propertyId: currentPropertyId,
+      dateRange,
+      metadata: currentMetadata,
+      token: googleToken,
+      runReport: runReportWithRetry
+    });
+
+    downloadMultiSectionPdf({
+      title: template.label,
+      sections,
+      filename: `ga4-${template.id}-${new Date().toISOString().slice(0, 10)}.pdf`,
+      PdfCtor: globalThis.jspdf.jsPDF
+    });
+
+    templateStatus.textContent = `${template.label} exported as a PDF.`;
+  } catch (error) {
+    templateStatus.textContent = error instanceof Error ? error.message : String(error);
+  }
+}
+
+createPresetController({
+  presets: REPORT_TEMPLATES,
+  container: document.querySelector("#template-list"),
+  onRun: runTemplate
 });
 
 const propertySelect = document.querySelector("#property-select");

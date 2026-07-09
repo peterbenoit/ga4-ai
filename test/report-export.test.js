@@ -5,6 +5,7 @@ import {
   buildCsv,
   downloadChartImage,
   downloadCsv,
+  downloadMultiSectionPdf,
   downloadPdfSummary
 } from "../src/report-export.js";
 
@@ -212,4 +213,50 @@ test("downloadPdfSummary paginates the table instead of capping at a fixed row c
   });
 
   assert.ok(calls.length > 0, "a 30-row table on a short page should trigger at least one addPage call");
+});
+
+test("downloadMultiSectionPdf writes the title, one heading and ruled table per section, and a page break between sections", () => {
+  const calls = [];
+
+  class PdfStub {
+    constructor() {
+      this.internal = { pageSize: { getHeight: () => 297 } };
+    }
+
+    setFontSize(size) {
+      calls.push(["setFontSize", size]);
+    }
+
+    text(value, x, y) {
+      calls.push(["text", value, x, y]);
+    }
+
+    rect(x, y, width, height) {
+      calls.push(["rect", x, y, width, height]);
+    }
+
+    addPage() {
+      calls.push(["addPage"]);
+    }
+
+    save(filename) {
+      calls.push(["save", filename]);
+    }
+  }
+
+  downloadMultiSectionPdf({
+    title: "Monthly stakeholder summary",
+    sections: [
+      { label: "Traffic acquisition", report: { headers: ["channel", "sessions"], rows: [["Organic Search", "120"]] } },
+      { label: "Pages and screens", report: { headers: ["pagePath", "views"], rows: [["/", "500"]] } }
+    ],
+    filename: "ga4-monthly-stakeholder-summary.pdf",
+    PdfCtor: PdfStub
+  });
+
+  assert.ok(calls.some((call) => call[0] === "text" && call[1] === "Monthly stakeholder summary"));
+  assert.ok(calls.some((call) => call[0] === "text" && call[1] === "Traffic acquisition"));
+  assert.ok(calls.some((call) => call[0] === "text" && call[1] === "Pages and screens"));
+  assert.equal(calls.filter((call) => call[0] === "addPage").length, 1, "should break page once between the two sections, not before the first");
+  assert.deepEqual(calls.at(-1), ["save", "ga4-monthly-stakeholder-summary.pdf"]);
 });

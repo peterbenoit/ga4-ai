@@ -28,10 +28,13 @@ Driven by evaluating mvp.va.gov/pwa as the first real reporting target.
       - [x] Real ruled table rendering (`drawRuledTable` in
         `src/report-export.js`) with header-row repeat and pagination —
         replaces the old pipe-joined-text dump capped at 12 rows.
-      - [ ] Named templates (e.g. "Monthly stakeholder summary," "Campaign
-        wrap-up") that bundle several presets into one export. Needs new UI:
-        a way to select/run multiple presets before exporting, not just a
-        report-export.js change.
+      - [x] Named templates (`src/templates.js`) that bundle several presets
+        into one export via `runTemplateReport` (`src/template-runner.js`)
+        and `downloadMultiSectionPdf` (`src/report-export.js`), with a
+        "Bundled PDF reports" row on the Ask tab. Shipped: "Monthly
+        stakeholder summary" (traffic acquisition, pages and screens, key
+        events) and "Campaign wrap-up" (traffic acquisition, landing pages,
+        outbound clicks).
       - [ ] KPI tiles with period-over-period deltas — depends on MVP-4
         comparison landing first.
 

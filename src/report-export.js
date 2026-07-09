@@ -86,6 +86,45 @@ function drawRuledTable({ pdf, headers, rows, x, y, maxWidth, pageHeight, margin
   return cursorY;
 }
 
+export function downloadMultiSectionPdf({
+  title,
+  sections,
+  filename,
+  PdfCtor
+}) {
+  const pdf = new PdfCtor();
+  const margin = 14;
+  const maxWidth = 182;
+  const pageHeight = pdf.internal.pageSize.getHeight();
+
+  pdf.setFontSize(16);
+  pdf.text(title, margin, margin);
+
+  sections.forEach((section, index) => {
+    if (index > 0) {
+      pdf.addPage();
+    }
+    let y = margin + (index === 0 ? 10 : 0);
+
+    pdf.setFontSize(13);
+    pdf.text(section.label, margin, y);
+    y += 8;
+
+    drawRuledTable({
+      pdf,
+      headers: section.report.headers,
+      rows: section.report.rows,
+      x: margin,
+      y,
+      maxWidth,
+      pageHeight,
+      margin
+    });
+  });
+
+  pdf.save(filename);
+}
+
 export function downloadPdfSummary({
   question,
   answer,
