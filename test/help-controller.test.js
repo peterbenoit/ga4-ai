@@ -21,7 +21,14 @@ function createFakeElement() {
 function createFakeDocument() {
   return {
     createElement() {
-      return { textContent: "" };
+      return {
+        textContent: "",
+        className: "",
+        children: [],
+        append(...nodes) {
+          this.children.push(...nodes);
+        }
+      };
     }
   };
 }
@@ -50,6 +57,46 @@ test("clicking the help button renders the active tab's content and opens the di
   assert.equal(titleEl.textContent, "Report");
   assert.equal(bodyEl.children.length, 2);
   assert.equal(opened, true);
+});
+
+test("a {term, detail} body entry renders as a labeled block with both parts, distinct from a plain-string paragraph", () => {
+  const button = createFakeElement();
+  const titleEl = createFakeElement();
+  const bodyEl = createFakeElement();
+  const closeButton = createFakeElement();
+  const dialog = { showModal() {}, close() {} };
+
+  createHelpController({
+    button,
+    dialog,
+    titleEl,
+    bodyEl,
+    closeButton,
+    content: {
+      ask: {
+        title: "Ask",
+        body: [
+          "Intro paragraph.",
+          { term: "Quick reports", detail: "Pre-built questions that run immediately." }
+        ]
+      }
+    },
+    getActiveTabId: () => "ask",
+    documentRef: createFakeDocument()
+  });
+
+  button.handlers.click();
+
+  assert.equal(bodyEl.children.length, 2);
+  const [intro, item] = bodyEl.children;
+  assert.equal(intro.className, "help-note");
+  assert.equal(intro.textContent, "Intro paragraph.");
+  assert.equal(item.className, "help-item");
+  assert.equal(item.children.length, 2);
+  assert.equal(item.children[0].className, "help-item__term");
+  assert.equal(item.children[0].textContent, "Quick reports");
+  assert.equal(item.children[1].className, "help-item__detail");
+  assert.equal(item.children[1].textContent, "Pre-built questions that run immediately.");
 });
 
 test("a tab with no help content shows a fallback message instead of throwing", () => {

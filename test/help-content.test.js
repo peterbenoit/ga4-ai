@@ -13,3 +13,16 @@ test("every tab has help content with a title and at least one paragraph", () =>
     assert.ok(Array.isArray(entry.body) && entry.body.length > 0, `missing body for tab: ${tabId}`);
   }
 });
+
+test("every body entry is either a non-empty string or a well-formed {term, detail} pair", () => {
+  for (const tabId of TAB_IDS) {
+    for (const item of HELP_CONTENT[tabId].body) {
+      if (typeof item === "string") {
+        assert.ok(item.length > 0, `${tabId}: empty string entry`);
+      } else {
+        assert.ok(item.term, `${tabId}: entry missing term`);
+        assert.ok(item.detail, `${tabId}: entry missing detail for term "${item.term}"`);
+      }
+    }
+  }
+});
