@@ -110,6 +110,7 @@ test("downloadPdfSummary writes question, answer, chart image, and table rows", 
   class PdfStub {
     constructor() {
       calls.push(["construct"]);
+      this.internal = { pageSize: { getHeight: () => 297 } };
     }
 
     setFontSize(size) {
@@ -127,6 +128,14 @@ test("downloadPdfSummary writes question, answer, chart image, and table rows", 
 
     addImage(image, format, x, y, width, height) {
       calls.push(["addImage", image, format, x, y, width, height]);
+    }
+
+    rect(x, y, width, height) {
+      calls.push(["rect", x, y, width, height]);
+    }
+
+    addPage() {
+      calls.push(["addPage"]);
     }
 
     save(filename) {
@@ -158,7 +167,49 @@ test("downloadPdfSummary writes question, answer, chart image, and table rows", 
   assert.ok(calls.some((call) => call[0] === "splitTextToSize" && call[1] === "Which countries sent users?"));
   assert.ok(calls.some((call) => call[0] === "splitTextToSize" && call[1] === "United States led with 120 active users."));
   assert.ok(calls.some((call) => call[0] === "addImage" && call[1] === "data:image/png;base64,chart" && call[2] === "PNG"));
-  assert.ok(calls.some((call) => call[0] === "text" && call[1] === "country | activeUsers"));
-  assert.ok(calls.some((call) => call[0] === "text" && call[1] === "United States | 120"));
+  assert.ok(calls.some((call) => call[0] === "text" && call[1] === "country"));
+  assert.ok(calls.some((call) => call[0] === "text" && call[1] === "activeUsers"));
+  assert.ok(calls.some((call) => call[0] === "text" && call[1] === "United States"));
+  assert.ok(calls.some((call) => call[0] === "text" && call[1] === "120"));
+  assert.ok(calls.some((call) => call[0] === "rect"), "table cells should be drawn with ruled borders");
   assert.deepEqual(calls.at(-1), ["save", "ga4-summary.pdf"]);
+});
+
+test("downloadPdfSummary paginates the table instead of capping at a fixed row count", () => {
+  const calls = [];
+
+  class PdfStub {
+    constructor() {
+      this.internal = { pageSize: { getHeight: () => 40 } };
+    }
+
+    setFontSize() {}
+    text() {}
+
+    splitTextToSize(value) {
+      return [value];
+    }
+
+    addImage() {}
+
+    rect() {}
+
+    addPage() {
+      calls.push("addPage");
+    }
+
+    save() {}
+  }
+
+  const rows = Array.from({ length: 30 }, (_, index) => [`Page ${index}`, String(index)]);
+
+  downloadPdfSummary({
+    question: "Which pages got views?",
+    answer: "30 pages had views.",
+    report: { headers: ["page", "views"], rows },
+    filename: "ga4-summary.pdf",
+    PdfCtor: PdfStub
+  });
+
+  assert.ok(calls.length > 0, "a 30-row table on a short page should trigger at least one addPage call");
 });

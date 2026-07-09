@@ -79,6 +79,68 @@ export const PRESETS = [
     }
   },
   {
+    id: "landing-pages",
+    label: "Landing pages",
+    description: "Sessions by the page each visit started on.",
+    kind: "report",
+    request(dateRange) {
+      return {
+        dimensions: [{ name: "landingPage" }],
+        metrics: [{ name: "sessions" }, { name: "activeUsers" }],
+        dateRanges: [dateRange],
+        orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
+        limit: 25
+      };
+    }
+  },
+  {
+    id: "tech-overview",
+    label: "Tech overview",
+    description: "Sessions by device category and browser, to correlate with the unsupported-browser warning.",
+    kind: "report",
+    request(dateRange) {
+      return {
+        dimensions: [{ name: "deviceCategory" }, { name: "browser" }],
+        metrics: [{ name: "sessions" }, { name: "activeUsers" }],
+        dateRanges: [dateRange],
+        orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
+        limit: 25
+      };
+    }
+  },
+  {
+    id: "outbound-clicks",
+    label: "Outbound clicks",
+    description: "Outbound click counts to eauth.va.gov, veteranscrisisline.net, va.gov, and youtube.com.",
+    kind: "report",
+    request(dateRange) {
+      return {
+        dimensions: [{ name: "linkDomain" }],
+        metrics: [{ name: "eventCount" }, { name: "activeUsers" }],
+        dateRanges: [dateRange],
+        dimensionFilter: {
+          andGroup: {
+            expressions: [
+              {
+                filter: { fieldName: "eventName", stringFilter: { matchType: "EXACT", value: "click" } }
+              },
+              {
+                filter: {
+                  fieldName: "linkDomain",
+                  inListFilter: {
+                    values: ["eauth.va.gov", "veteranscrisisline.net", "va.gov", "youtube.com"]
+                  }
+                }
+              }
+            ]
+          }
+        },
+        orderBys: [{ metric: { metricName: "eventCount" }, desc: true }],
+        limit: 25
+      };
+    }
+  },
+  {
     id: "join-funnel",
     label: "Join funnel",
     description: "Home to /joinmvp to outbound join click, with drop-off between steps. Needs the join-click step configured before it can run.",

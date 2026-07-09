@@ -69,6 +69,40 @@ test("key-events preset falls back to conversions when no metadata is supplied",
   assert.deepEqual(request.metrics, [{ name: "conversions" }]);
 });
 
+test("landing-pages preset dimensions on landingPage and orders by sessions", () => {
+  const landingPages = PRESETS.find((preset) => preset.id === "landing-pages");
+  const request = landingPages.request(dateRange);
+
+  assert.deepEqual(request.dimensions, [{ name: "landingPage" }]);
+  assert.equal(request.orderBys[0].metric.metricName, "sessions");
+});
+
+test("tech-overview preset dimensions on deviceCategory and browser", () => {
+  const techOverview = PRESETS.find((preset) => preset.id === "tech-overview");
+  const request = techOverview.request(dateRange);
+
+  assert.deepEqual(request.dimensions, [{ name: "deviceCategory" }, { name: "browser" }]);
+  assert.equal(request.orderBys[0].metric.metricName, "sessions");
+});
+
+test("outbound-clicks preset filters to click events on the four tracked domains", () => {
+  const outboundClicks = PRESETS.find((preset) => preset.id === "outbound-clicks");
+  const request = outboundClicks.request(dateRange);
+
+  assert.deepEqual(request.dimensions, [{ name: "linkDomain" }]);
+
+  const [eventFilter, domainFilter] = request.dimensionFilter.andGroup.expressions;
+  assert.equal(eventFilter.filter.fieldName, "eventName");
+  assert.equal(eventFilter.filter.stringFilter.value, "click");
+  assert.equal(domainFilter.filter.fieldName, "linkDomain");
+  assert.deepEqual(domainFilter.filter.inListFilter.values, [
+    "eauth.va.gov",
+    "veteranscrisisline.net",
+    "va.gov",
+    "youtube.com"
+  ]);
+});
+
 test("realtime preset has no date range and uses realtime-only dimensions", () => {
   const realtime = PRESETS.find((preset) => preset.id === "realtime");
   const request = realtime.request();

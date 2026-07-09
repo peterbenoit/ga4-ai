@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">GA4 Query Assistant icon</title>
+  <desc id="desc">A compact analytics chart with a question spark, used as the Chrome extension icon.</desc>
+  <defs>
+    <linearGradient id="bg" x1="18" y1="14" x2="110" y2="114" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f4b400"/>
+      <stop offset=".52" stop-color="#f57c00"/>
+      <stop offset="1" stop-color="#d84315"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="31" y1="26" x2="97" y2="102" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#fff7e6"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="7" flood-color="#7a2d00" flood-opacity=".25"/>
+    </filter>
+  </defs>
+
+  <rect width="128" height="128" rx="28" fill="url(#bg)"/>
+  <path d="M102 16c7.2 4 10 10 10 19v49c0 15.5-12.5 28-28 28H35c-8.9 0-15-2.9-19-10 24.4 6.1 48.7.9 65.8-16.2C98.9 68.7 108.1 40.4 102 16Z" fill="#bf360c" opacity=".18"/>
+
+  <rect x="24" y="23" width="80" height="82" rx="18" fill="url(#panel)" filter="url(#shadow)"/>
+  <path d="M41 84h50" fill="none" stroke="#3c4043" stroke-width="6" stroke-linecap="round" opacity=".28"/>
+
+  <rect x="39" y="62" width="11" height="22" rx="4" fill="#4285f4"/>
+  <rect x="58" y="47" width="11" height="37" rx="4" fill="#34a853"/>
+  <rect x="77" y="35" width="11" height="49" rx="4" fill="#fbbc04"/>
+
+  <path d="M41 52c9.5-9.7 20.6-5.2 27.4-12.5C73 34.6 77.8 30 88 30" fill="none" stroke="#202124" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="88" cy="30" r="5.5" fill="#202124"/>
+
+  <circle cx="88" cy="85" r="18" fill="#1a73e8"/>
+  <path d="M83.3 80.5c.4-4.5 3.6-7.2 8-7.2 4.8 0 8 2.8 8 7 0 3.1-1.6 5-4.4 6.8-2.2 1.4-2.7 2.4-2.7 4.7" fill="none" stroke="#fff" stroke-width="5.5" stroke-linecap="round"/>
+  <circle cx="92.1" cy="98" r="2.9" fill="#fff"/>
+</svg>

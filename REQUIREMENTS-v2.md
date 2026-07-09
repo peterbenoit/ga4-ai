@@ -10,26 +10,30 @@ Driven by evaluating mvp.va.gov/pwa as the first real reporting target.
       Evaluate runFunnelReport (Data API v1alpha) vs. a deterministic
       preset that stitches sequential runReport calls. Ship as a preset,
       not an NL feature.
-- [ ] MVP-3: Promote Landing pages and Tech overview from "later candidates"
+- [x] MVP-3: Promote Landing pages and Tech overview from "later candidates"
       to shipped presets (tech overview should surface browser share to
       correlate with the unsupported-browser warning).
 - [ ] MVP-4: Audience-segment comparison. One question, two filtered
       requests (e.g. Researcher Hub paths vs everything else), composed
       into a single comparative answer. Un-defers the "compare across
       reports" backlog item, narrowly.
-- [ ] MVP-5: Outbound click preset (event: click / link_domain) covering
+- [x] MVP-5: Outbound click preset (event: click / link_domain) covering
       eauth.va.gov, veteranscrisisline.net, va.gov, youtube.com.
 - [x] MVP-6 (not extension code): measurement QA — confirmed the dual GTM
       containers (GTM-M5WC82N / GTM-5LG8W55) aren't double-firing, confirmed
       join/sign-in clicks are tagged, confirmed the unsupported-browser
       modal fires a trackable event.
-- [ ] MVP-7: Multi-section stakeholder PDF report. Named templates (e.g.
-      "Monthly stakeholder summary," "Campaign wrap-up") that bundle several
-      presets into one export with real ruled tables (not pipe-joined text,
-      no 12-row cap) and KPI tiles with period deltas once MVP-4 comparison
-      lands. Bar is the sample Looker Studio exports in `Examples/Reports/`.
-      Depends on MVP-4 for the delta numbers; the multi-section layout and
-      real table rendering can start independently.
+- [~] MVP-7: Multi-section stakeholder PDF report. Bar is the sample Looker
+      Studio exports in `Examples/Reports/`.
+      - [x] Real ruled table rendering (`drawRuledTable` in
+        `src/report-export.js`) with header-row repeat and pagination —
+        replaces the old pipe-joined-text dump capped at 12 rows.
+      - [ ] Named templates (e.g. "Monthly stakeholder summary," "Campaign
+        wrap-up") that bundle several presets into one export. Needs new UI:
+        a way to select/run multiple presets before exporting, not just a
+        report-export.js change.
+      - [ ] KPI tiles with period-over-period deltas — depends on MVP-4
+        comparison landing first.
 
 Ordering rationale: MVP-1 first because it makes every existing NL query
 more accurate for near-zero code; MVP-2 is the highest-value new

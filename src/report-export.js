@@ -42,6 +42,50 @@ function addWrappedText({ pdf, text, x, y, maxWidth, lineHeight }) {
   return y + (lines.length * lineHeight);
 }
 
+function truncateCell(value, columnWidth) {
+  const text = String(value);
+  const maxChars = Math.max(6, Math.floor(columnWidth / 1.6));
+  return text.length > maxChars ? `${text.slice(0, maxChars - 1)}…` : text;
+}
+
+function drawTableRow({ pdf, values, columnWidths, x, y, rowHeight }) {
+  let cellX = x;
+  for (const [index, value] of values.entries()) {
+    const width = columnWidths[index];
+    pdf.rect(cellX, y, width, rowHeight);
+    pdf.text(truncateCell(value, width), cellX + 1.5, y + rowHeight - 2);
+    cellX += width;
+  }
+}
+
+// Ruled table with column-boundary pagination, replacing the earlier
+// pipe-joined-text-capped-at-12-rows export. Header row repeats on every
+// new page so a table split across pages stays readable on its own.
+function drawRuledTable({ pdf, headers, rows, x, y, maxWidth, pageHeight, margin, rowHeight = 6 }) {
+  const columnWidths = headers.map(() => maxWidth / headers.length);
+  let cursorY = y;
+
+  const drawHeader = () => {
+    pdf.setFontSize(8);
+    drawTableRow({ pdf, values: headers, columnWidths, x, y: cursorY, rowHeight });
+    cursorY += rowHeight;
+  };
+
+  drawHeader();
+
+  for (const row of rows) {
+    if (cursorY + rowHeight > pageHeight - margin) {
+      pdf.addPage();
+      cursorY = margin;
+      drawHeader();
+    }
+    drawTableRow({ pdf, values: row, columnWidths, x, y: cursorY, rowHeight });
+    cursorY += rowHeight;
+  }
+
+  return cursorY;
+}
+
 export function downloadPdfSummary({
   question,
   answer,
@@ -53,6 +97,7 @@ export function downloadPdfSummary({
   const pdf = new PdfCtor();
   const margin = 14;
   const maxWidth = 182;
+  const pageHeight = pdf.internal.pageSize.getHeight();
   let y = margin;
 
   pdf.setFontSize(16);
@@ -74,19 +119,13 @@ export function downloadPdfSummary({
   }
 
   pdf.text("Data", margin, y);
-  y += 6;
-  pdf.setFontSize(8);
-  pdf.text(report.headers.join(" | "), margin, y);
-  y += 5;
-
-  for (const row of report.rows.slice(0, 12)) {
-    pdf.text(row.join(" | "), margin, y);
-    y += 5;
+  y += 4;
+  if (y + 6 > pageHeight - margin) {
+    pdf.addPage();
+    y = margin;
   }
 
-  if (report.rows.length > 12) {
-    pdf.text(`Showing first 12 of ${report.rows.length} rows. Export CSV for the full table.`, margin, y);
-  }
+  drawRuledTable({ pdf, headers: report.headers, rows: report.rows, x: margin, y, maxWidth, pageHeight, margin });
 
   pdf.save(filename);
 }
