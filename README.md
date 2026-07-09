@@ -6,6 +6,10 @@ A single-user Chrome extension for asking plain-language questions about GA4 dat
 
 Run `npm test`.
 
+## Docs
+
+- [VA Digital Stakeholder persona](docs/personas/va-digital-stakeholder.md)
+
 ## Load locally
 
 1. Open `chrome://extensions` in Chrome.
