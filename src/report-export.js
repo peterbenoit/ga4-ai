@@ -110,6 +110,11 @@ export function downloadMultiSectionPdf({
     pdf.text(section.label, margin, y);
     y += 8;
 
+    if (section.chartImage) {
+      pdf.addImage(section.chartImage, "PNG", margin, y, maxWidth, 60);
+      y += 66;
+    }
+
     drawRuledTable({
       pdf,
       headers: section.report.headers,

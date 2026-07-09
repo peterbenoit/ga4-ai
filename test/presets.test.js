@@ -5,7 +5,7 @@ import { PRESETS } from "../src/presets.js";
 
 const dateRange = { startDate: "2026-06-01", endDate: "2026-06-30" };
 
-test("every preset has a unique id, a label, and a kind of report, realtime, or funnel", () => {
+test("every preset has a unique id, a label, and a kind of report, realtime, funnel, or comparison", () => {
   const ids = new Set();
 
   for (const preset of PRESETS) {
@@ -14,22 +14,39 @@ test("every preset has a unique id, a label, and a kind of report, realtime, or 
     ids.add(preset.id);
     assert.ok(preset.label);
     assert.ok(preset.description);
-    assert.ok(["report", "realtime", "funnel"].includes(preset.kind));
+    assert.ok(["report", "realtime", "funnel", "comparison"].includes(preset.kind));
     if (preset.kind === "funnel") {
       assert.ok(Array.isArray(preset.steps) && preset.steps.length > 0, preset.id);
+    } else if (preset.kind === "comparison") {
+      assert.ok(Array.isArray(preset.metrics) && preset.metrics.length > 0, preset.id);
+      assert.ok(Array.isArray(preset.segments) && preset.segments.length === 2, preset.id);
+      for (const segment of preset.segments) {
+        assert.ok(segment.label, preset.id);
+        assert.ok(segment.dimensionFilter, preset.id);
+      }
     } else {
       assert.equal(typeof preset.request, "function");
     }
   }
 });
 
-test("join-funnel preset flags its outbound-click step as pending until configured", () => {
+test("join-funnel preset has no pending steps now that the outbound-click filter is configured", () => {
   const joinFunnel = PRESETS.find((preset) => preset.id === "join-funnel");
 
   assert.ok(joinFunnel);
-  const pendingSteps = joinFunnel.steps.filter((step) => step.pending);
-  assert.equal(pendingSteps.length, 1);
-  assert.equal(pendingSteps[0].label, "Outbound join click");
+  assert.equal(joinFunnel.steps.some((step) => step.pending), false);
+});
+
+test("join-funnel preset's outbound-click step filters to click events on the eauth.va.gov link domain", () => {
+  const joinFunnel = PRESETS.find((preset) => preset.id === "join-funnel");
+  const outboundStep = joinFunnel.steps.find((step) => step.label === "Outbound join click");
+
+  const [eventFilter, domainFilter] = outboundStep.dimensionFilter.andGroup.expressions;
+  assert.equal(eventFilter.filter.fieldName, "eventName");
+  assert.equal(eventFilter.filter.stringFilter.value, "click");
+  assert.equal(domainFilter.filter.fieldName, "linkDomain");
+  assert.equal(domainFilter.filter.stringFilter.matchType, "CONTAINS");
+  assert.equal(domainFilter.filter.stringFilter.value, "eauth.va.gov");
 });
 
 test("report-kind presets require a metric and a date range", () => {

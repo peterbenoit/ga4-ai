@@ -159,12 +159,73 @@ export const PRESETS = [
         }
       },
       {
-        // TODO(MVP-2): replace with the real event/param filter for the
-        // outbound join click, confirmed against GTM-M5WC82N / GTM-5LG8W55
-        // or the GA4 Events report. See REQUIREMENTS-v2.md MVP-2.
         label: "Outbound join click",
-        pending: true,
-        dimensionFilter: null
+        dimensionFilter: {
+          andGroup: {
+            expressions: [
+              {
+                filter: { fieldName: "eventName", stringFilter: { matchType: "EXACT", value: "click" } }
+              },
+              {
+                filter: {
+                  fieldName: "linkDomain",
+                  stringFilter: { matchType: "CONTAINS", value: "eauth.va.gov" }
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    id: "mobile-vs-desktop",
+    label: "Mobile vs. Desktop",
+    description: "Sessions and engagement rate, mobile visitors compared to desktop visitors.",
+    kind: "comparison",
+    metrics: ["sessions", "engagementRate"],
+    segments: [
+      {
+        label: "Mobile",
+        dimensionFilter: { filter: { fieldName: "deviceCategory", stringFilter: { matchType: "EXACT", value: "mobile" } } }
+      },
+      {
+        label: "Desktop",
+        dimensionFilter: { filter: { fieldName: "deviceCategory", stringFilter: { matchType: "EXACT", value: "desktop" } } }
+      }
+    ]
+  },
+  {
+    id: "new-vs-returning",
+    label: "New vs. Returning visitors",
+    description: "Sessions and engagement rate, new visitors compared to returning visitors.",
+    kind: "comparison",
+    metrics: ["sessions", "engagementRate"],
+    segments: [
+      {
+        label: "New",
+        dimensionFilter: { filter: { fieldName: "newVsReturning", stringFilter: { matchType: "EXACT", value: "new" } } }
+      },
+      {
+        label: "Returning",
+        dimensionFilter: { filter: { fieldName: "newVsReturning", stringFilter: { matchType: "EXACT", value: "returning" } } }
+      }
+    ]
+  },
+  {
+    id: "organic-vs-paid",
+    label: "Organic vs. Paid channel",
+    description: "Sessions and active users, organic search traffic compared to paid search traffic.",
+    kind: "comparison",
+    metrics: ["sessions", "activeUsers"],
+    segments: [
+      {
+        label: "Organic Search",
+        dimensionFilter: { filter: { fieldName: "sessionDefaultChannelGroup", stringFilter: { matchType: "EXACT", value: "Organic Search" } } }
+      },
+      {
+        label: "Paid Search",
+        dimensionFilter: { filter: { fieldName: "sessionDefaultChannelGroup", stringFilter: { matchType: "EXACT", value: "Paid Search" } } }
       }
     ]
   },

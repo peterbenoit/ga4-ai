@@ -260,3 +260,45 @@ test("downloadMultiSectionPdf writes the title, one heading and ruled table per 
   assert.equal(calls.filter((call) => call[0] === "addPage").length, 1, "should break page once between the two sections, not before the first");
   assert.deepEqual(calls.at(-1), ["save", "ga4-monthly-stakeholder-summary.pdf"]);
 });
+
+test("downloadMultiSectionPdf embeds a section's chart image when present, and skips it when absent", () => {
+  const calls = [];
+
+  class PdfStub {
+    constructor() {
+      this.internal = { pageSize: { getHeight: () => 297 } };
+    }
+
+    setFontSize() {}
+    text() {}
+    rect() {}
+    addPage() {}
+
+    addImage(image, format, x, y, width, height) {
+      calls.push(["addImage", image, format, x, y, width, height]);
+    }
+
+    save() {}
+  }
+
+  downloadMultiSectionPdf({
+    title: "Campaign wrap-up",
+    sections: [
+      {
+        label: "Traffic acquisition",
+        chartImage: "data:image/png;base64,chart1",
+        report: { headers: ["channel", "sessions"], rows: [["Organic Search", "120"]] }
+      },
+      {
+        label: "Outbound clicks",
+        chartImage: null,
+        report: { headers: ["linkDomain", "eventCount"], rows: [["va.gov", "12"]] }
+      }
+    ],
+    filename: "ga4-campaign-wrap-up.pdf",
+    PdfCtor: PdfStub
+  });
+
+  assert.equal(calls.length, 1, "only the section with a chartImage should call addImage");
+  assert.equal(calls[0][1], "data:image/png;base64,chart1");
+});

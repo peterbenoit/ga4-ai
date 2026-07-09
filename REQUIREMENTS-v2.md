@@ -6,17 +6,26 @@ Driven by evaluating mvp.va.gov/pwa as the first real reporting target.
       (event names, key events, GTM-defined params) added to the translator
       prompt so NL questions map to this site's actual event taxonomy
       instead of guessed names. Manual JSON/MD file per property is fine.
-- [ ] MVP-2: Join-funnel report. Home → /joinmvp → outbound join click.
-      Evaluate runFunnelReport (Data API v1alpha) vs. a deterministic
-      preset that stitches sequential runReport calls. Ship as a preset,
-      not an NL feature.
+- [x] MVP-2: Join-funnel report. Home → /joinmvp → outbound join click.
+      Shipped as the deterministic stitched-runReport preset
+      (`src/funnel-report.js` / `join-funnel` in `src/presets.js`), not
+      the v1alpha runFunnelReport endpoint. Outbound-click step filters on
+      eventName "click" + linkDomain containing "eauth.va.gov", confirmed
+      via GTM debug session.
 - [x] MVP-3: Promote Landing pages and Tech overview from "later candidates"
       to shipped presets (tech overview should surface browser share to
       correlate with the unsupported-browser warning).
-- [ ] MVP-4: Audience-segment comparison. One question, two filtered
-      requests (e.g. Researcher Hub paths vs everything else), composed
-      into a single comparative answer. Un-defers the "compare across
-      reports" backlog item, narrowly.
+- [x] MVP-4: Audience-segment comparison. Shipped as deterministic
+      comparison-kind presets (`src/comparison-report.js`, "Compare
+      segments" row on the Ask tab), not an NL/translator feature — same
+      precedent as MVP-2's funnel. Built-in pairs: Mobile vs. Desktop, New
+      vs. Returning, Organic vs. Paid channel. `composeAnswer` needed no
+      changes; it's already data-shape agnostic. Ad hoc named segments
+      (e.g. "Researcher Hub vs everything else") are explicitly out of
+      scope — would need Claude to invent an arbitrary pagePath filter,
+      the same fragility risk MVP-2 avoided; revisit only if the 3
+      built-in pairs prove insufficient, likely via a per-property named-
+      segment dictionary extending MVP-1's pattern.
 - [x] MVP-5: Outbound click preset (event: click / link_domain) covering
       eauth.va.gov, veteranscrisisline.net, va.gov, youtube.com.
 - [x] MVP-6 (not extension code): measurement QA — confirmed the dual GTM

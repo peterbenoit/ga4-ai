@@ -12,12 +12,14 @@ import {
   runRealtimeReport
 } from "./ga4-client.js";
 import { runFunnelReport } from "./funnel-report.js";
+import { runComparisonReport } from "./comparison-report.js";
 import { createHelpController } from "./help-controller.js";
 import { HELP_CONTENT } from "./help-content.js";
 import { createPresetController } from "./preset-controller.js";
 import { PRESETS } from "./presets.js";
 import { REPORT_TEMPLATES } from "./templates.js";
 import { runTemplateReport } from "./template-runner.js";
+import { buildSectionChartImage } from "./section-chart.js";
 import { createPropertyController } from "./property-controller.js";
 import { createPropertyStore } from "./property-store.js";
 import { createQueryController, todayInTimeZone } from "./query-controller.js";
@@ -256,10 +258,13 @@ pinReportButton.addEventListener("click", async () => {
 });
 
 const presetStatus = document.querySelector("#preset-status");
+const comparisonStatus = document.querySelector("#comparison-status");
 
 async function runPreset(preset) {
+  const statusEl = preset.kind === "comparison" ? comparisonStatus : presetStatus;
+
   if (!currentPropertyId || !currentMetadata) {
-    presetStatus.textContent = "Select a property and load its metadata first.";
+    statusEl.textContent = "Select a property and load its metadata first.";
     return;
   }
 
@@ -269,22 +274,36 @@ async function runPreset(preset) {
   if (preset.kind === "funnel") {
     const pendingStep = preset.steps.find((step) => step.pending);
     if (pendingStep) {
-      presetStatus.textContent = `"${preset.label}" isn't ready yet: the "${pendingStep.label}" step needs a real GA4 event name filled in. Ask a dev to check GTM/GA4 for the exact event that fires on that click, then it'll work.`;
+      statusEl.textContent = `"${preset.label}" isn't ready yet: the "${pendingStep.label}" step needs a real GA4 event name filled in. Ask a dev to check GTM/GA4 for the exact event that fires on that click, then it'll work.`;
       return;
     }
   }
 
-  const request = preset.kind === "funnel" ? { dateRanges: [dateRange] } : preset.request(dateRange, currentMetadata);
+  const request = preset.kind === "funnel" || preset.kind === "comparison"
+    ? { dateRanges: [dateRange] }
+    : preset.request(dateRange, currentMetadata);
 
   if (preset.kind === "report") {
     const errors = validateReportRequest(request, currentMetadata);
     if (errors.length > 0) {
-      presetStatus.textContent = `This property doesn't support "${preset.label}": ${errors.join("; ")}`;
+      statusEl.textContent = `This property doesn't support "${preset.label}": ${errors.join("; ")}`;
       return;
     }
   }
 
-  presetStatus.textContent = `Running ${preset.label}…`;
+  if (preset.kind === "comparison") {
+    const errors = preset.segments.flatMap((segment) => validateReportRequest({
+      metrics: preset.metrics.map((name) => ({ name })),
+      dateRanges: [dateRange],
+      dimensionFilter: segment.dimensionFilter
+    }, currentMetadata).map((error) => `${segment.label}: ${error}`));
+    if (errors.length > 0) {
+      statusEl.textContent = `This property doesn't support "${preset.label}": ${errors.join("; ")}`;
+      return;
+    }
+  }
+
+  statusEl.textContent = `Running ${preset.label}…`;
   try {
     let report;
     if (preset.kind === "funnel") {
@@ -295,13 +314,22 @@ async function runPreset(preset) {
         token: googleToken,
         runReport: runReportWithRetry
       });
+    } else if (preset.kind === "comparison") {
+      report = await runComparisonReport({
+        propertyId: currentPropertyId,
+        metrics: preset.metrics,
+        segments: preset.segments,
+        dateRange,
+        token: googleToken,
+        runReport: runReportWithRetry
+      });
     } else {
       const run = preset.kind === "realtime" ? runRealtimeReportWithRetry : runReportWithRetry;
       report = await run({ propertyId: currentPropertyId, request, token: googleToken });
     }
     renderReport(report);
     tabs.select("report");
-    presetStatus.textContent = `Report returned ${report.rowCount} ${report.rowCount === 1 ? "row" : "rows"}.`;
+    statusEl.textContent = `Report returned ${report.rowCount} ${report.rowCount === 1 ? "row" : "rows"}.`;
 
     if (report.rowCount === 0) {
       return;
@@ -320,13 +348,19 @@ async function runPreset(preset) {
     pinReportButton.disabled = false;
     await historyController.refresh();
   } catch (error) {
-    presetStatus.textContent = error instanceof Error ? error.message : String(error);
+    statusEl.textContent = error instanceof Error ? error.message : String(error);
   }
 }
 
 createPresetController({
-  presets: PRESETS,
+  presets: PRESETS.filter((preset) => preset.kind !== "comparison"),
   container: document.querySelector("#preset-list"),
+  onRun: runPreset
+});
+
+createPresetController({
+  presets: PRESETS.filter((preset) => preset.kind === "comparison"),
+  container: document.querySelector("#comparison-list"),
   onRun: runPreset
 });
 
@@ -353,9 +387,19 @@ async function runTemplate(template) {
       runReport: runReportWithRetry
     });
 
+    const sectionsWithCharts = sections.map((section) => ({
+      ...section,
+      chartImage: buildSectionChartImage({
+        report: section.report,
+        createChart(canvas, config) {
+          return new globalThis.Chart(canvas, config);
+        }
+      })
+    }));
+
     downloadMultiSectionPdf({
       title: template.label,
-      sections,
+      sections: sectionsWithCharts,
       filename: `ga4-${template.id}-${new Date().toISOString().slice(0, 10)}.pdf`,
       PdfCtor: globalThis.jspdf.jsPDF
     });
