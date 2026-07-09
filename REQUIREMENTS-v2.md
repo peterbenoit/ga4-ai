@@ -19,12 +19,22 @@ Driven by evaluating mvp.va.gov/pwa as the first real reporting target.
       reports" backlog item, narrowly.
 - [ ] MVP-5: Outbound click preset (event: click / link_domain) covering
       eauth.va.gov, veteranscrisisline.net, va.gov, youtube.com.
-- [ ] MVP-6 (not extension code): measurement QA — confirm the dual GTM
-      containers (GTM-M5WC82N / GTM-5LG8W55) aren't double-firing, confirm
-      join/sign-in clicks are tagged, confirm the unsupported-browser
+- [x] MVP-6 (not extension code): measurement QA — confirmed the dual GTM
+      containers (GTM-M5WC82N / GTM-5LG8W55) aren't double-firing, confirmed
+      join/sign-in clicks are tagged, confirmed the unsupported-browser
       modal fires a trackable event.
+- [ ] MVP-7: Multi-section stakeholder PDF report. Named templates (e.g.
+      "Monthly stakeholder summary," "Campaign wrap-up") that bundle several
+      presets into one export with real ruled tables (not pipe-joined text,
+      no 12-row cap) and KPI tiles with period deltas once MVP-4 comparison
+      lands. Bar is the sample Looker Studio exports in `Examples/Reports/`.
+      Depends on MVP-4 for the delta numbers; the multi-section layout and
+      real table rendering can start independently.
 
-Ordering rationale: MVP-1 first because it makes every existing NL query more accurate for near-zero code; MVP-2 is the highest-value new capability; MVP-6 gates the accuracy of everything else and costs no extension work.
+Ordering rationale: MVP-1 first because it makes every existing NL query
+more accurate for near-zero code; MVP-2 is the highest-value new
+capability; MVP-6 gates the accuracy of everything else and costs no
+extension work; MVP-7 is last because its KPI-tile piece depends on MVP-4.
 
 
 

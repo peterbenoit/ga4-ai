@@ -69,4 +69,11 @@ unanswerable question would either get force-fit into a bad request or
 fall into clarification, neither of which is quite right. Worth a look once
 Phase 3 sees real usage against the harder rows in the reference sheet.
 
+## Fancy multi-section PDF reports (Looker Studio-style)
+
+Promoted to `REQUIREMENTS-v2.md` as MVP-7. Current v1 export
+(`downloadPdfSummary` in `src/report-export.js`) stays intentionally
+minimal — one chart, one question/answer block, plain-text row dump
+capped at 12 rows. Don't build the multi-section/KPI-tile version against
+this file; track it against MVP-7 instead.
 
